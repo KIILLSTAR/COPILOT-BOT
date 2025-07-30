@@ -1,8 +1,7 @@
-from solana.rpc.api import Client
-from solana.keypair import Keypair
-from safe_wallet_manager.safe_swap import safe_execute_swap
-from safe_wallet_manager.config import DRY_RUN
-from token_config import get_mint
+from core.multi_signal import detect_signals
+from wallet.wallet import SafeWalletManager
+from wallet.logger import log_trade
+from wallet.TOKEN_config import TOKEN_LIST
 
 # === CONFIG ===
 RPC_URL = "https://api.mainnet-beta.solana.com"
