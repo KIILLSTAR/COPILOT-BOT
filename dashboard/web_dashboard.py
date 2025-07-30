@@ -1,10 +1,8 @@
 # web_dashboard.py
 
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static
-from market_data import build_market_dataframe
-from indicators import calculate_indicators
-from main import generate_signal
+from flask import Flask, render_template
+from cli.view_audit_log import get_audit_logs
+from wallet.wallet import SafeWalletManager
 
 class BotDashboard(App):
     CSS_PATH = "dashboard.css"
