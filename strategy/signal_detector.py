@@ -1,52 +1,37 @@
-# strategy/signal_detector.py
+import time
+import logging
+import random  # ✅ Needed for slippage simulation
 
-from core.trigger import confirm_trade
-from core.executor import execute_trade
-
-# inside your signal loop:
-if confirm_trade(signal_data):
-    execute_trade(signal_data)
-else:
-    print("⏭️ Trade skipped by user.")
-from logger.audit_logger import _write_log
-from config import trade_config as cfg
-
-def detect_signal():
+# Example signal detection stub
+def detect_signal(market_data):
     """
-    Simulated signal detection logic.
-    Replace with real strategy logic (e.g., RSI, EMA crossover).
+    Analyze market data and return a signal.
+    Returns 'buy', 'sell', or None.
     """
-    # Example mock signal
-    signal = {
-        "asset": "ETH-PERP",
-        "action": "BUY",
-        "confidence": 0.82,
-        "timestamp": "2025-07-30 09:05:00"
-    }
-
-    # Simulate signal condition
-    if signal["confidence"] > cfg.SIGNAL_THRESHOLD:
-        return signal
+    # Placeholder logic — replace with your strategy
+    if market_data.get("rsi", 50) < 30:
+        return "buy"
+    elif market_data.get("rsi", 50) > 70:
+        return "sell"
     return None
 
-def execute_trade(signal_data):
+# Trade execution stub
+def execute_trade(signal, dry_run=True, confirm_fnimport time
+import logging
+import random  # ✅ Needed for slippage simulation
+
+# Example signal detection stub
+def detect_signal(market_data):
     """
-    Simulated trade execution.
-    Replace with real trade logic (e.g., Drift SDK call).
+    Analyze market data and return a signal.
+    Returns 'buy', 'sell', or None.
     """
-    print(f"✅ Simulated Trade Executed: {signal_data['action']} {signal_data['asset']}")
-    _write_log("EXECUTE", f"{signal_data['action']} {signal_data['asset']} @ {signal_data['timestamp']}")
+    # Placeholder logic — replace with your strategy
+    if market_data.get("rsi", 50) < 30:
+        return "buy"
+    elif market_data.get("rsi", 50) > 70:
+        return "sell"
+    return None
 
-def run_signal_loop():
-    signal_data = detect_signal()
-
-    if signal_data:
-        _write_log("SIGNAL", f"Detected: {signal_data}")
-
-        if confirm_trade(signal_data):
-            execute_trade(signal_data)
-        else:
-            print("⏭️ Trade skipped by user.")
-            _write_log("SKIP", f"User declined: {signal_data}")
-    else:
-        print("🔍 No valid signal this cycle.")
+# Trade execution stub
+def execute_trade(signal, dry_run=True, confirm_fn
