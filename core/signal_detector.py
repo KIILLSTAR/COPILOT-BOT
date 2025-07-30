@@ -1,39 +1,45 @@
 # strategy/signal_detector.py
 
-import json
+from core.trigger import confirm_trade
+from logger.audit_logger import _write_log
 from config import trade_config as cfg
-from wallet.wallet_manager import simulate_trade, execute_trade
-from logger.audit_logger import log_signal
-
-PENDING_SIGNAL_PATH = "logs/pending_signal.json"
 
 def detect_signal():
     """
-    Dummy signal generator for testing.
-    Replace with real RSI/EMA/volume logic.
+    Simulated signal detection logic.
+    Replace with real strategy logic (e.g., RSI, EMA crossover).
     """
-    return {
-        "token": "ETH-PERP",
-        "action": "LONG",
-        "confidence": 0.85
+    # Example mock signal
+    signal = {
+        "asset": "ETH-PERP",
+        "action": "BUY",
+        "confidence": 0.82,
+        "timestamp": "2025-07-30 09:05:00"
     }
 
-def save_pending_signal(signal):
-    with open(PENDING_SIGNAL_PATH, "w") as f:
-        json.dump(signal, f)
+    # Simulate signal condition
+    if signal["confidence"] > cfg.SIGNAL_THRESHOLD:
+        return signal
+    return None
 
-def process_signal(signal):
-    log_signal(signal)
-
-    if cfg.DRY_RUN:
-        simulate_trade(signal)
-    elif cfg.AUTO_MODE:
-        execute_trade(signal)
-    else:
-        save_pending_signal(signal)
-        print("Signal saved for manual confirmation.")
+def execute_trade(signal_data):
+    """
+    Simulated trade execution.
+    Replace with real trade logic (e.g., Drift SDK call).
+    """
+    print(f"✅ Simulated Trade Executed: {signal_data['action']} {signal_data['asset']}")
+    _write_log("EXECUTE", f"{signal_data['action']} {signal_data['asset']} @ {signal_data['timestamp']}")
 
 def run_signal_loop():
-    signal = detect_signal()
-    if signal:
-        process_signal(signal)
+    signal_data = detect_signal()
+
+    if signal_data:
+        _write_log("SIGNAL", f"Detected: {signal_data}")
+
+        if confirm_trade(signal_data):
+            execute_trade(signal_data)
+        else:
+            print("⏭️ Trade skipped by user.")
+            _write_log("SKIP", f"User declined: {signal_data}")
+    else:
+        print("🔍 No valid
