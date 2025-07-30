@@ -10,7 +10,7 @@ EMA_FAST = 9
 EMA_SLOW = 21
 VOLUME_SPIKE_MULTIPLIER = 1.5
 
-def fetch_eth_perp_data():
+def df = fetch_eth_perp_ohlcv():
     """
     Placeholder: Replace with real Drift or market data fetch.
     Returns OHLCV DataFrame with columns: ['timestamp', 'open', 'high', 'low', 'close', 'volume']
