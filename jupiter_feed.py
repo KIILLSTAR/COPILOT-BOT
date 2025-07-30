@@ -16,3 +16,16 @@ def fetch_jupiter_price_data(token_symbol: str, interval: str = "1m", limit: int
     }, inplace=True)
 
     return df[["open", "high", "low", "close", "volume"]]
+
+def fetch_latest_price_snapshot(token_pair: str) -> dict:
+    url = f"https://price.jup.ag/v4/chart?symbol={token_pair}&interval=1m&limit=1"
+    response = requests.get(url)
+    data = response.json()["data"][0]  # latest candle
+
+    return {
+        "open": data["o"],
+        "high": data["h"],
+        "low": data["l"],
+        "close": data["c"],
+        "volume": data["v"]
+    }
