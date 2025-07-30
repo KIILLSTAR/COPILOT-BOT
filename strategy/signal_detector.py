@@ -42,4 +42,4 @@ def run_signal_loop():
             print("⏭️ Trade skipped by user.")
             _write_log("SKIP", f"User declined: {signal_data}")
     else:
-        print("🔍 No valid
+        print("🔍 No valid signal this cycle.")
