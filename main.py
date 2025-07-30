@@ -1,36 +1,34 @@
 # main.py
 
-from core.signal_executor import evaluate_and_execute
-from dashboard.dashboard import manual_trade_interface
-from core.pnl_monitor import check_pnl_and_act
-from config.trade_config import AUTO_MODE, ENABLE_MANUAL_CONTROLS, DRY_RUN
-from utils.logger import log_trade_action
+from strategy.signal_detector import run_signal_loop
+from core.pnl_monitor import run_pnl_monitor
+from config import trade_config as cfg
+from logger.audit_logger import _write_log
 import time
 
-def run_bot():
-    log_trade_action("🚀 ETH Perpetual Bot Started")
-    log_trade_action(f"Mode: {'AUTO' if AUTO_MODE else 'MANUAL'}, Dry-run: {DRY_RUN}")
+def main():
+    print("🚀 Starting Modular Trading Bot")
+    print(f"Mode: {'DRY-RUN' if cfg.DRY_RUN else 'LIVE'} | Auto: {cfg.AUTO_MODE}")
+
+    _write_log("BOOT", "Bot initialized")
 
     try:
         while True:
-            # 🔁 Auto-mode: evaluate strategy and trade
-            if AUTO_MODE:
-                evaluate_and_execute()
+            # 🔍 Detect and process signal
+            run_signal_loop()
 
-            # 📊 PnL monitoring and auto-close
-            check_pnl_and_act()
-
-            # 📱 Manual dashboard interface
-            if ENABLE_MANUAL_CONTROLS:
-                manual_trade_interface()
+            # 📊 Monitor PnL after trade
+            run_pnl_monitor()
 
             # ⏱️ Sleep between cycles (adjust as needed)
             time.sleep(60)
 
     except KeyboardInterrupt:
-        log_trade_action("🛑 Bot stopped by user.")
+        _write_log("SHUTDOWN", "Bot stopped by user")
+        print("🛑 Bot stopped manually.")
     except Exception as e:
-        log_trade_action(f"[ERROR] Bot crashed: {str(e)}")
+        _write_log("ERROR", f"Bot crashed: {str(e)}")
+        print(f"[ERROR] {str(e)}")
 
 if __name__ == "__main__":
-    run_bot()
+    main()
