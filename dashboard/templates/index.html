@@ -1,5 +1,3 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,6 +9,11 @@
     <h2>Current Mode: {{ mode }}</h2>
     <form action="/toggle_mode" method="post">
         <button type="submit">Toggle Mode</button>
+    </form>
+
+    <h2>Dry-Run Mode: {{ "ON" if dry_run else "OFF" }}</h2>
+    <form action="/toggle_dry_run" method="post">
+        <button type="submit">Toggle Dry-Run</button>
     </form>
 
     <h2>Manual Trade</h2>
