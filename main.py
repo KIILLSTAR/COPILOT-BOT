@@ -2,6 +2,7 @@
 
 from core.signal_executor import evaluate_and_execute
 from dashboard.dashboard import manual_trade_interface
+from core.pnl_monitor import check_pnl_and_act
 from config.trade_config import AUTO_MODE, ENABLE_MANUAL_CONTROLS, DRY_RUN
 from utils.logger import log_trade_action
 import time
@@ -12,13 +13,18 @@ def run_bot():
 
     try:
         while True:
+            # 🔁 Auto-mode: evaluate strategy and trade
             if AUTO_MODE:
                 evaluate_and_execute()
 
+            # 📊 PnL monitoring and auto-close
+            check_pnl_and_act()
+
+            # 📱 Manual dashboard interface
             if ENABLE_MANUAL_CONTROLS:
                 manual_trade_interface()
 
-            # Sleep between cycles (adjust as needed)
+            # ⏱️ Sleep between cycles (adjust as needed)
             time.sleep(60)
 
     except KeyboardInterrupt:
