@@ -1,0 +1,17 @@
+<!-- templates/logs.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bot Logs</title>
+</head>
+<body>
+    <h2>Recent Logs</h2>
+    <pre>
+        {% for line in logs %}
+            {{ line }}
+        {% endfor %}
+    </pre>
+    <a href="/">Back to Dashboard</a>
+</body>
+</html>
