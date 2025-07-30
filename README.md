@@ -14,6 +14,21 @@ A modular, automated trading bot for ETH perpetuals on Solana using Jupiter Aggr
 - Run `web_dashboard.py` for browser dashboard
 
 ---
+# 🧠 Solana Trading Bot
+
+Modular, mobile-friendly bot for multi-asset trading with audit logging and manual trade confirmation.
+
+## 📦 Folder Structure
+- `core/`: Signal detection, Jupiter API, strategy logic
+- `wallet/`: SafeWalletManager, logger, token config
+- `cli/`: Mode toggler, audit viewer
+- `dashboard/`: Flask dashboard
+- `utils/`: Dry run, config, setup
+
+## 🚀 Quick Start
+```bash
+pip install -r requirements.txt
+python start.py
 
 ## 🧠 Features
 
