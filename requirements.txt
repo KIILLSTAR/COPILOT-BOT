@@ -5,3 +5,4 @@ solana
 rich
 textual
 tabulate
+flask
