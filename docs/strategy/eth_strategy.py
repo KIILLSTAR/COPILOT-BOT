@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-from utils.logger import log_trade_action
+from core.market_data import fetch_eth_perp_ohlcv
 
 ### 📊 Strategy Parameters
 RSI_PERIOD = 14
