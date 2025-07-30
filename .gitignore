@@ -3,3 +3,8 @@ git remote add origin https://github.com/yourusername/eth-perps-bot.git
 git add .
 git commit -m "Initial commit"
 git push -u origin main
+__pycache__/
+*.pyc
+.env
+.venv/
+*.log
