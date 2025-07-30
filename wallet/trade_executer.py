@@ -1,50 +1,44 @@
-# wallet/trade_executer.py
+# trade_executor.py
 
-from wallet.TOKEN_config import TOKEN_META
-from wallet.logger import log_info, log_error, log_event
-from utils.dry_run import is_dry_run
+from core.drift_client import init_drift_client
+from core.position_manager import open_perp_position, close_perp_position
+from config.trade_config import (
+    DRY_RUN,
+    RPC_URL,
+    KEYPAIR_PATH,
+    MARKET_INDEX,
+    LEVERAGE
+)
+from utils.logger import log_trade_action
 
-def execute_trade(token: str, amount: float) -> bool:
+# Initialize Drift client once
+drift_client = init_drift_client(KEYPAIR_PATH, RPC_URL)
+
+def execute_perp_trade(signal: str, size: float):
+    """
+    Executes a perpetual trade on Drift based on signal.
+    signal: "long", "short", or "close"
+    size: USD amount to trade
+    """
+    if DRY_RUN:
+        log_trade_action(f"[DRY RUN] Signal: {signal}, Size: {size}, Leverage: {LEVERAGE}")
+        return
+
     try:
-        # ✅ Validate token metadata
-        meta = TOKEN_META.get(token)
-        if not meta:
-            raise ValueError(f"Token '{token}' not found in TOKEN_META")
+        if signal == "long":
+            log_trade_action(f"Executing LONG position: Size={size}, Leverage={LEVERAGE}")
+            open_perp_position(drift_client, MARKET_INDEX, "long", size, LEVERAGE)
 
-        mint = meta.get("mint")
-        decimals = meta.get("decimals")
+        elif signal == "short":
+            log_trade_action(f"Executing SHORT position: Size={size}, Leverage={LEVERAGE}")
+            open_perp_position(drift_client, MARKET_INDEX, "short", size, LEVERAGE)
 
-        if not mint or decimals is None:
-            raise ValueError(f"Missing mint or decimals for token '{token}'")
+        elif signal == "close":
+            log_trade_action(f"Closing position on market index {MARKET_INDEX}")
+            close_perp_position(drift_client, MARKET_INDEX)
 
-        # ✅ Dry-run mode
-        if is_dry_run():
-            log_info(f"[DRY RUN] Would execute trade: {amount} {token} (mint: {mint}, decimals: {decimals})")
-            log_event("DRY_RUN_TRADE", {
-                "token": token,
-                "amount": amount,
-                "mint": mint,
-                "decimals": decimals
-            })
-            return True
-
-        # ✅ Real trade logic placeholder
-        # Replace this with actual swap or transfer logic
-        log_info(f"Executing trade: {amount} {token} (mint: {mint}, decimals: {decimals})")
-        log_event("TRADE_EXECUTED", {
-            "token": token,
-            "amount": amount,
-            "mint": mint,
-            "decimals": decimals
-        })
-
-        return True
+        else:
+            log_trade_action(f"Invalid signal received: {signal}")
 
     except Exception as e:
-        log_error(f"Trade execution failed for {token}: {str(e)}")
-        log_event("TRADE_FAILED", {
-            "token": token,
-            "amount": amount,
-            "error": str(e)
-        })
-        return False
+        log_trade_action(f"[ERROR] Trade execution failed: {str(e)}")
