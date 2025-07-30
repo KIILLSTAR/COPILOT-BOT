@@ -2,6 +2,7 @@
 
 A modular, automated trading bot for ETH perpetuals on Solana using Jupiter Aggregator. Includes CLI and web dashboards for mobile control.
 
+[![Run on Replit](https://replit.com/badge/github/KIILLSTAR/COPILOT-BOT)](https://replit.com/github/KIILLSTAR/COPILOT-BOT)
 ---
 
 ## 📱 Mobile Access
