@@ -13,6 +13,21 @@ A modular, automated trading bot for ETH perpetuals on Solana using Jupiter Aggr
 - Run `dashboard.py` for CLI view
 - Run `web_dashboard.py` for browser dashboard
 
+# 🧠 Modular Trading Bot (ETH Perpetuals + Solana Spot)
+
+A fully modular, audit-friendly trading bot with manual control, dry-run mode, and mobile-ready dashboard. Built for Replit deployment and real-time experimentation.
+
+---
+
+## 🚀 Quick Start (Replit)
+
+1. **Fork or Upload Repo to Replit**
+   - Include: `main.py`, `dashboard.py`, `strategy/`, `wallet/`, `logger/`, `config/`
+
+2. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+
 ---
 # 🧠 Solana Trading Bot
 
@@ -24,11 +39,6 @@ Modular, mobile-friendly bot for multi-asset trading with audit logging and manu
 - `cli/`: Mode toggler, audit viewer
 - `dashboard/`: Flask dashboard
 - `utils/`: Dry run, config, setup
-
-## 🚀 Quick Start
-```bash
-pip install -r requirements.txt
-python start.py
 
 ## 🧠 Features
 
@@ -61,14 +71,3 @@ This bot scans live signals from Jupiter (RSI + EMA + volume), lets you confirm 
 - 🧾 Audit logging of every trade decision
 - 📊 Web dashboard for mobile control
 - 🧭 CLI viewer for past trades
-
----
-
-## 🛠️ Setup (Replit or Local)
-
-### 1. Clone the repo or upload files to Replit
-
-### 2. Run setup script (once per project)
-
-```bash
-bash setup.sh
