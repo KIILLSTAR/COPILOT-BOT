@@ -22,3 +22,9 @@ def log_simulation(details):
 
 def log_execution(details):
     _write_log("EXECUTION", details)
+
+def log_pnl_alert(pnl):
+    _write_log("PNL_ALERT", {"pnl": pnl})
+
+def log_auto_close(pnl):
+    _write_log("AUTO_CLOSE", {"pnl": pnl})
