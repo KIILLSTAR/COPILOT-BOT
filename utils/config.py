@@ -1,6 +1,14 @@
-# config.py
+import json
+import os
 
-LIVE_MODE = False  # Set to True to enable live trading
-SECRET_KEY = "4TgTnMaFuQiDUsxD7mwzHk1zQ81p2DrsQ8cR19FbNJjaZ5eWx6T5uESktpQ2RbKq3ZcmdRSzzJGuSP5WMTVdgq1f"
+CONFIG_PATH = "utils/config.json"
 
-ETH_MINT = "7vfCXT4uJzj3qzFqzWgYJzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1z
+def load_config():
+    if not os.path.exists(CONFIG_PATH):
+        return {"mode": "manual"}
+    with open(CONFIG_PATH, "r") as f:
+        return json.load(f)
+
+def save_config(data):
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(data, f, indent=2)
