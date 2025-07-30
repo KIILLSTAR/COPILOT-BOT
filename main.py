@@ -1,6 +1,4 @@
-# main.py
-
-from config import LIVE_MODE, SECRET_KEY, ETH_MINT, USDC_MINT)
+from config import LIVE_MODE, SECRET_KEY, ETH_MINT, USDC_MINT
 from wallet import load_keypair, get_wallet_address
 from jupiter_api import execute_swap
 from market_data import build_market_dataframe
@@ -33,4 +31,18 @@ def main():
         if signal != "HOLD":
             if LIVE_MODE:
                 try:
-                    execute_swap(wallet_address, ETH_MINT
+                    execute_swap(wallet_address, ETH_MINT, USDC_MINT, amount, live=True)
+                    log_trade(wallet_address, asset, signal, amount, live=True)
+                except Exception as e:
+                    print(f"[ERROR] Live trade failed: {e}")
+            else:
+                simulate_trade(wallet_address, asset, signal, amount)
+                log_trade(wallet_address, asset, signal, amount, live=False)
+
+        evaluate_performance()
+
+    except Exception as e:
+        print(f"[FATAL] Bot crashed: {e}")
+
+if __name__ == "__main__":
+    main()
