@@ -1,0 +1,6 @@
+# config.py
+
+LIVE_MODE = False  # Set to True to enable live trading
+SECRET_KEY = "your_phantom_wallet_secret_key"
+
+ETH_MINT = "7vfCXT4uJzj3qzFqzWgYJzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1zFfWzvYk1z
