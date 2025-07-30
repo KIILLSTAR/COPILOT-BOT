@@ -1,43 +1,40 @@
+<!-- templates/index.html -->
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Solana Bot Dashboard</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        button { margin: 5px; padding: 10px; }
-        h2 { margin-top: 30px; }
-    </style>
+    <title>Copilot Bot Dashboard</title>
 </head>
 <body>
-    <h1>Solana Trading Bot Dashboard</h1>
+    <h1>Copilot Bot Dashboard</h1>
 
     <h2>Current Mode: {{ mode }}</h2>
     <form action="/toggle_mode" method="post">
         <button type="submit">Toggle Mode</button>
     </form>
 
+    <h2>Manual Trade</h2>
     <form action="/manual_trade" method="post">
-    <select name="token">
-        {% for token in TOKEN_LIST %}
-            <option value="{{ token }}">{{ token }}</option>
-        {% endfor %}
-    </select>
-    <input type="number" name="amount" step="0.01" placeholder="Amount">
-    <button type="submit">Execute Trade</button>
+        <label for="token">Token:</label>
+        <select name="token" id="token">
+            {% for token in tokens %}
+                <option value="{{ token }}">{{ token }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" step="0.01" placeholder="Amount">
+
+        <button type="submit">Execute Trade</button>
     </form>
 
-    <h2>Pending Trades</h2>
-    <form action="/confirm_trade" method="post">
-        <input type="hidden" name="token" value="SOL">
-        <input type="hidden" name="action" value="buy">
-        <button type="submit">Confirm Trade</button>
-    </form>
-
-    <h2>Audit Logs</h2>
-    <ul>
-        {% for log in logs %}
-            <li>{{ log }}</li>
+    <h2>Recent Logs</h2>
+    <pre>
+        {% for line in logs %}
+            {{ line }}
         {% endfor %}
-    </ul>
+    </pre>
+
+    <a href="/logs">View Full Logs</a>
 </body>
 </html>
