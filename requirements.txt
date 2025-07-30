@@ -4,3 +4,4 @@ requests
 solana
 rich
 textual
+tabulate
