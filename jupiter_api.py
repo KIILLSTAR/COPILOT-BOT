@@ -1,8 +1,10 @@
-# jupiter_api.py
-
 import requests
 
-def execute_swap(wallet_address, input_mint, output_mint, amount):
+def execute_swap(wallet_address, input_mint, output_mint, amount, live=False):
+    if not live:
+        print("[DRY RUN] Swap skipped.")
+        return
+
     url = "https://quote-api.jup.ag/v6/swap"
     payload = {
         "userPublicKey": wallet_address,
