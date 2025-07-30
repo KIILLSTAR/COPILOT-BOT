@@ -1,5 +1,5 @@
-import pandas as pd
-import pandas_ta as ta
+from wallet.logger import log_info, log_event
+log_info("Signal detected for SOL")
 
 def detect_market_signal(price_data: pd.DataFrame) -> str:
     # Apply indicators
