@@ -1,0 +1,6 @@
+pandas
+pandas-ta
+requests
+solana
+rich
+textual
