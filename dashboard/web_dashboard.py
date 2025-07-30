@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect
 from dashboard.log_viewer import get_recent_logs
 from wallet.TOKEN_config import TOKEN_LIST
-from wallet.logger import log_info, log_event
-# Optional: from wallet.trade_executer import execute_trade
+from wallet.logger import log_info, log_error, log_event
+from wallet.trade_executer import execute_trade
 
 app = Flask(__name__)
 
@@ -40,13 +40,21 @@ def toggle_mode_route():
 @app.route("/manual_trade", methods=["POST"])
 def manual_trade():
     token = request.form.get("token")
-    amount = float(request.form.get("amount", 0))
+    try:
+        amount = float(request.form.get("amount", 0))
+    except ValueError:
+        log_error(f"Invalid amount submitted for {token}")
+        return redirect("/")
 
-    # Optional: execute the trade
-    # execute_trade(token, amount)
+    log_event("MANUAL_TRADE_REQUEST", {"token": token, "amount": amount})
+    log_info(f"Manual trade requested: {amount} {token}")
 
-    log_event("MANUAL_TRADE", {"token": token, "amount": amount})
-    log_info(f"Manual trade triggered: {amount} {token}")
+    success = execute_trade(token, amount)
+    if not success:
+        log_error(f"Manual trade execution failed for {token}")
+    else:
+        log_info(f"Manual trade executed successfully for {token}")
+
     return redirect("/")
 
 if __name__ == "__main__":
