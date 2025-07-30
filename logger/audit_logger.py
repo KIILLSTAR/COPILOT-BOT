@@ -4,7 +4,7 @@ import os
 from config import trade_config as cfg
 from datetime import datetime
 
-LOG_PATH = cfg.LOG_PATH
+LOG_PATH = cfg.LOG_FILE
 
 def _write_log(entry_type, details):
     timestamp = datetime.utcnow().isoformat()
