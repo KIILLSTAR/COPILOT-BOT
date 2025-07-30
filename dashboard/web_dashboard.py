@@ -3,6 +3,7 @@ from dashboard.log_viewer import get_recent_logs
 from wallet.TOKEN_config import TOKEN_LIST
 from wallet.logger import log_info, log_error, log_event
 from wallet.trade_executer import execute_trade
+from utils.dry_run import is_dry_run, toggle_dry_run
 
 app = Flask(__name__)
 
@@ -22,7 +23,8 @@ def toggle_mode():
 def index():
     logs = get_recent_logs(50)
     mode = get_current_mode()
-    return render_template("index.html", logs=logs, mode=mode, tokens=TOKEN_LIST)
+    dry_run = is_dry_run()
+    return render_template("index.html", logs=logs, mode=mode, dry_run=dry_run, tokens=TOKEN_LIST)
 
 # ✅ Log viewer
 @app.route("/logs")
@@ -34,6 +36,13 @@ def show_logs():
 @app.route("/toggle_mode", methods=["POST"])
 def toggle_mode_route():
     toggle_mode()
+    return redirect("/")
+
+# ✅ Dry-run toggle
+@app.route("/toggle_dry_run", methods=["POST"])
+def toggle_dry_run_route():
+    new_state = toggle_dry_run()
+    log_event("DRY_RUN_TOGGLED", {"dry_run": new_state})
     return redirect("/")
 
 # ✅ Manual trade trigger
