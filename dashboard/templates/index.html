@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solana Bot Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px; }
+        h2 { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Solana Trading Bot Dashboard</h1>
+
+    <h2>Current Mode: {{ mode }}</h2>
+    <form action="/toggle_mode" method="post">
+        <button type="submit">Toggle Mode</button>
+    </form>
+
+    <h2>Pending Trades</h2>
+    <form action="/confirm_trade" method="post">
+        <input type="hidden" name="token" value="SOL">
+        <input type="hidden" name="action" value="buy">
+        <button type="submit">Confirm Trade</button>
+    </form>
+
+    <h2>Audit Logs</h2>
+    <ul>
+        {% for log in logs %}
+            <li>{{ log }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
