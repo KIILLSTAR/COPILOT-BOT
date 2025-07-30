@@ -1,32 +1,28 @@
-# web_dashboard.py
-
-from flask import Flask, render_template
-from cli.view_audit_log import get_audit_logs
+from flask import Flask, render_template, request, redirect
 from wallet.wallet import SafeWalletManager
+from cli.view_audit_log import get_audit_logs
+from utils.config import load_config, save_config
 
-class BotDashboard(App):
-    CSS_PATH = "dashboard.css"
+app = Flask(__name__)
 
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield Footer()
-        yield Static(self.render_metrics())
+@app.route("/")
+def index():
+    logs = get_audit_logs()
+    mode = load_config().get("mode", "manual")
+    return render_template("index.html", logs=logs, mode=mode)
 
-    def render_metrics(self) -> str:
-        df = build_market_dataframe()
-        df = calculate_indicators(df)
-        signal = generate_signal(df)
-        latest = df.iloc[-1]
+@app.route("/toggle_mode", methods=["POST"])
+def toggle_mode():
+    config = load_config()
+    current = config.get("mode", "manual")
+    new_mode = "auto" if current == "manual" else "manual"
+    config["mode"] = new_mode
+    save_config(config)
+    return redirect("/")
 
-        return (
-            f"\n[ COPILOT-BOT Web Dashboard ]\n\n"
-            f"Signal: {signal}\n"
-            f"RSI: {latest['RSI']:.2f}\n"
-            f"EMA Fast: {latest['EMA_fast']:.2f}\n"
-            f"EMA Slow: {latest['EMA_slow']:.2f}\n"
-            f"Volume: {latest['volume']:.2f}\n"
-            f"Volume Spike: {latest['Volume_Spike']}\n"
-        )
-
-if __name__ == "__main__":
-    BotDashboard().run()
+@app.route("/confirm_trade", methods=["POST"])
+def confirm_trade():
+    trade_data = request.form.to_dict()
+    wallet = SafeWalletManager()
+    wallet.confirm_trade(trade_data)
+    return redirect("/")
