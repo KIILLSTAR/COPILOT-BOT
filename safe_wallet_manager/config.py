@@ -1,0 +1,3 @@
+DRY_RUN = True
+MIN_BALANCE_THRESHOLD = 0.01
+LOG_PATH = "./logs/"
