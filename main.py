@@ -1,48 +1,42 @@
-from config import LIVE_MODE, SECRET_KEY, ETH_MINT, USDC_MINT
-from wallet import load_keypair, get_wallet_address
-from jupiter_api import execute_swap
-from market_data import build_market_dataframe
-from indicators import calculate_indicators
-from dry_run import simulate_trade
-from logger import log_trade
-from performance import evaluate_performance
+from solana.rpc.api import Client
+from solana.keypair import Keypair
+from safe_wallet_manager.safe_swap import safe_execute_swap
+from safe_wallet_manager.config import DRY_RUN
+from token_config import get_mint
 
-def generate_signal(df):
-    latest = df.iloc[-1]
-    if latest['RSI'] < 30 and latest['EMA_fast'] > latest['EMA_slow'] and latest['Volume_Spike']:
-        return "BUY"
-    elif latest['RSI'] > 70 and latest['EMA_fast'] < latest['EMA_slow']:
-        return "SELL"
-    else:
-        return "HOLD"
+# === CONFIG ===
+RPC_URL = "https://api.mainnet-beta.solana.com"
+PRIVATE_KEY = [INSERT_YOUR_PRIVATE_KEY_ARRAY]
 
-def main():
-    try:
-        keypair = load_keypair(SECRET_KEY)
-        wallet_address = get_wallet_address(keypair)
+# === INIT CLIENT & WALLET ===
+client = Client(RPC_URL)
+keypair = Keypair.from_secret_key(bytes(PRIVATE_KEY))
+wallet_address = str(keypair.public_key)
 
-        df = build_market_dataframe()
-        df = calculate_indicators(df)
+# === STRATEGY LOGIC ===
+def select_token(market_dipping: bool = False, manual_override: str = None):
+    if manual_override:
+        return get_mint(manual_override)
+    return get_mint("USDC") if market_dipping else get_mint("ETH_PORTAL")
 
-        signal = generate_signal(df)
-        asset = "ETH-PERP"
-        amount = 1.0
+# === SWAP FUNCTION ===
+def execute_swap(wallet_address, mint):
+    if DRY_RUN:
+        print(f"[DRY RUN] Would execute swap for {mint} from {wallet_address}")
+        return "dry_run_tx_id"
 
-        if signal != "HOLD":
-            if LIVE_MODE:
-                try:
-                    execute_swap(wallet_address, ETH_MINT, USDC_MINT, amount, live=True)
-                    log_trade(wallet_address, asset, signal, amount, live=True)
-                except Exception as e:
-                    print(f"[ERROR] Live trade failed: {e}")
-            else:
-                simulate_trade(wallet_address, asset, signal, amount)
-                log_trade(wallet_address, asset, signal, amount, live=False)
+    print(f"Executing live swap for {mint} from {wallet_address}")
+    return "mock_tx_id_123"
 
-        evaluate_performance()
-
-    except Exception as e:
-        print(f"[FATAL] Bot crashed: {e}")
-
+# === RUN SWAP SAFELY ===
 if __name__ == "__main__":
-    main()
+    print("🚀 COPILOT-BOT starting...")
+
+    # Example: market dip detected
+    market_dipping = True
+    active_mint = select_token(market_dipping)
+
+    # Or override manually:
+    # active_mint = select_token(manual_override="SOL")
+
+    safe_execute_swap(client, wallet_address, active_mint, execute_swap)
