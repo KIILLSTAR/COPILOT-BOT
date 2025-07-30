@@ -1,24 +1,41 @@
-# market_data.py
+# core/market_data.py
 
 import pandas as pd
-import requests
+from driftpy.drift_client import DriftClient
+from driftpy.wallet import Wallet
+from solana.rpc.api import Client as SolanaClient
+from config.trade_config import RPC_URL, KEYPAIR_PATH, MARKET_INDEX
+from utils.logger import log_trade_action
 
-def fetch_price_data():
-    url = "https://api.coingecko.com/api/v3/coins/ethereum/market_chart"
-    params = {"vs_currency": "usd", "days": "1", "interval": "minute"}
-    response = requests.get(url, params=params)
-    data = response.json()
-    prices = data["prices"]
-    volumes = data["total_volumes"]
+def init_drift_client():
+    solana_client = SolanaClient(RPC_URL)
+    wallet = Wallet(KEYPAIR_PATH)
+    return DriftClient(solana_client, wallet)
 
-    df = pd.DataFrame({
-        "timestamp": [p[0] for p in prices],
-        "price": [p[1] for p in prices],
-        "volume": [v[1] for v in volumes]
-    })
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    return df
+def fetch_eth_perp_ohlcv(limit=100):
+    """
+    Fetches recent OHLCV data for ETH-PERP from Drift.
+    Returns a DataFrame with columns: ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+    """
+    try:
+        drift_client = init_drift_client()
+        candles = drift_client.get_candles(market_index=MARKET_INDEX, limit=limit)
 
-def build_market_dataframe():
-    df = fetch_price_data()
-    return df.tail(100)  # use last 100 minutes
+        if not candles:
+            log_trade_action("No candle data returned from Drift.")
+            return pd.DataFrame()
+
+        df = pd.DataFrame([{
+            'timestamp': pd.to_datetime(candle.timestamp, unit='s'),
+            'open': candle.open,
+            'high': candle.high,
+            'low': candle.low,
+            'close': candle.close,
+            'volume': candle.volume
+        } for candle in candles])
+
+        return df
+
+    except Exception as e:
+        log_trade_action(f"[ERROR] Failed to fetch OHLCV data: {str(e)}")
+        return pd.DataFrame()
