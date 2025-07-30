@@ -23,3 +23,8 @@ LOG_PATH = "logs/trade_log.txt"  # Path to audit log file
 ### 📱 Dashboard Toggles
 SHOW_POSITION_STATUS = True      # If True, dashboard shows open position info
 ENABLE_MANUAL_CONTROLS = True    # If True, dashboard allows manual long/short/close
+
+# PnL Monitoring
+PNL_ALERT_THRESHOLD = 20.0       # USD profit to trigger alert
+MAX_LOSS_THRESHOLD = 15.0        # USD loss to trigger auto-close
+AUTO_CLOSE_ENABLED = True        # If True, auto-close on thresholds
