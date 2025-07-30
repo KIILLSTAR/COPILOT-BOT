@@ -1,41 +1,30 @@
-from core.multi_signal import detect_signals
-from wallet.wallet import SafeWalletManager
-from wallet.logger import log_trade
-from wallet.TOKEN_config import TOKEN_LIST
+# main.py
 
-# === CONFIG ===
-RPC_URL = "https://api.mainnet-beta.solana.com"
-PRIVATE_KEY = [INSERT_YOUR_PRIVATE_KEY_ARRAY]
+from core.signal_executor import evaluate_and_execute
+from dashboard.dashboard import manual_trade_interface
+from config.trade_config import AUTO_MODE, ENABLE_MANUAL_CONTROLS, DRY_RUN
+from utils.logger import log_trade_action
+import time
 
-# === INIT CLIENT & WALLET ===
-client = Client(RPC_URL)
-keypair = Keypair.from_secret_key(bytes(PRIVATE_KEY))
-wallet_address = str(keypair.public_key)
+def run_bot():
+    log_trade_action("🚀 ETH Perpetual Bot Started")
+    log_trade_action(f"Mode: {'AUTO' if AUTO_MODE else 'MANUAL'}, Dry-run: {DRY_RUN}")
 
-# === STRATEGY LOGIC ===
-def select_token(market_dipping: bool = False, manual_override: str = None):
-    if manual_override:
-        return get_mint(manual_override)
-    return get_mint("USDC") if market_dipping else get_mint("ETH_PORTAL")
+    try:
+        while True:
+            if AUTO_MODE:
+                evaluate_and_execute()
 
-# === SWAP FUNCTION ===
-def execute_swap(wallet_address, mint):
-    if DRY_RUN:
-        print(f"[DRY RUN] Would execute swap for {mint} from {wallet_address}")
-        return "dry_run_tx_id"
+            if ENABLE_MANUAL_CONTROLS:
+                manual_trade_interface()
 
-    print(f"Executing live swap for {mint} from {wallet_address}")
-    return "mock_tx_id_123"
+            # Sleep between cycles (adjust as needed)
+            time.sleep(60)
 
-# === RUN SWAP SAFELY ===
+    except KeyboardInterrupt:
+        log_trade_action("🛑 Bot stopped by user.")
+    except Exception as e:
+        log_trade_action(f"[ERROR] Bot crashed: {str(e)}")
+
 if __name__ == "__main__":
-    print("🚀 COPILOT-BOT starting...")
-
-    # Example: market dip detected
-    market_dipping = True
-    active_mint = select_token(market_dipping)
-
-    # Or override manually:
-    # active_mint = select_token(manual_override="SOL")
-
-    safe_execute_swap(client, wallet_address, active_mint, execute_swap)
+    run_bot()
