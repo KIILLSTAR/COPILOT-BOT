@@ -31,3 +31,29 @@ A modular, automated trading bot for ETH perpetuals on Solana using Jupiter Aggr
 ### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
+
+# 🔁 Modular Trading Bot with Jupiter Feed + Audit Dashboard
+
+This bot scans live signals from Jupiter (RSI + EMA + volume), lets you confirm trades manually or automatically, and logs every decision for full auditability. Built for mobile-friendly control via Flask dashboard.
+
+---
+
+## 🚀 Features
+
+- ✅ Real-time price feed from Jupiter (`SOL/USDC`, `ETH/USDC`, etc.)
+- 📈 Signal engine using RSI, EMA, and volume
+- 🔐 SafeWalletManager with manual/auto modes
+- 🧾 Audit logging of every trade decision
+- 📊 Web dashboard for mobile control
+- 🧭 CLI viewer for past trades
+
+---
+
+## 🛠️ Setup (Replit or Local)
+
+### 1. Clone the repo or upload files to Replit
+
+### 2. Run setup script (once per project)
+
+```bash
+bash setup.sh
