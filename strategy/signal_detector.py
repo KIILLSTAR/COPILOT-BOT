@@ -1,6 +1,13 @@
 # strategy/signal_detector.py
 
 from core.trigger import confirm_trade
+from core.executor import execute_trade
+
+# inside your signal loop:
+if confirm_trade(signal_data):
+    execute_trade(signal_data)
+else:
+    print("⏭️ Trade skipped by user.")
 from logger.audit_logger import _write_log
 from config import trade_config as cfg
 
