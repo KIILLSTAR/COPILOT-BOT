@@ -1,43 +1,30 @@
 # core/pnl_monitor.py
 
-from core.drift_client import init_drift_client
-from config.trade_config import (
-    MARKET_INDEX,
-    PNL_ALERT_THRESHOLD,
-    AUTO_CLOSE_ENABLED,
-    MAX_LOSS_THRESHOLD,
-    DRY_RUN
-)
-from trade_executor import execute_perp_trade
-from utils.logger import log_trade_action
+import random
+from config import trade_config as cfg
+from logger.audit_logger import log_pnl_alert, log_auto_close
 
-def check_pnl_and_act():
+def get_simulated_pnl():
     """
-    Checks unrealized PnL and triggers alerts or auto-close if thresholds are hit.
+    Simulate a PnL value for testing.
+    Replace with real Drift SDK call later.
     """
-    if DRY_RUN:
-        log_trade_action("🧪 Dry-run mode: Skipping PnL check.")
-        return
+    return round(random.uniform(-25.0, 25.0), 2)
 
-    try:
-        drift_client = init_drift_client()
-        pnl = drift_client.get_unrealized_pnl(market_index=MARKET_INDEX)
+def check_pnl_thresholds():
+    pnl = get_simulated_pnl()
+    print(f"[PnL Monitor] Simulated PnL: ${pnl}")
 
-        log_trade_action(f"📈 Current PnL: {pnl:.2f} USD")
+    if pnl >= cfg.PNL_ALERT_THRESHOLD:
+        log_pnl_alert(pnl)
+        print(f"[ALERT] Profit threshold hit: ${pnl}")
 
-        if pnl >= PNL_ALERT_THRESHOLD:
-            log_trade_action(f"✅ PnL exceeds alert threshold: {pnl:.2f} USD")
+    if pnl <= -cfg.MAX_LOSS_THRESHOLD and cfg.AUTO_CLOSE_ENABLED:
+        log_auto_close(pnl)
+        print(f"[AUTO-CLOSE] Loss threshold hit: ${pnl}")
 
-            if AUTO_CLOSE_ENABLED:
-                log_trade_action("Auto-close triggered due to profit target.")
-                execute_perp_trade("close", size=0)
-
-        elif pnl <= -MAX_LOSS_THRESHOLD:
-            log_trade_action(f"⚠️ PnL below max loss threshold: {pnl:.2f} USD")
-
-            if AUTO_CLOSE_ENABLED:
-                log_trade_action("Auto-close triggered due to loss limit.")
-                execute_perp_trade("close", size=0)
-
-    except Exception as e:
-        log_trade_action(f"[ERROR] PnL monitor failed: {str(e)}")
+def run_pnl_monitor():
+    """
+    Call this periodically or after each trade.
+    """
+    check_pnl_thresholds()
