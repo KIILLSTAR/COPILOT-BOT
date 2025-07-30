@@ -1,24 +1,39 @@
-from wallet.logger import log_info, log_event
-log_info("Signal detected for SOL")
+# strategy/signal_detector.py
 
-def detect_market_signal(price_data: pd.DataFrame) -> str:
-    # Apply indicators
-    price_data.ta.rsi(length=14, append=True)
-    price_data.ta.ema(length=21, append=True)
-    price_data.ta.volume(append=True)
+import json
+from config import trade_config as cfg
+from wallet.wallet_manager import simulate_trade, execute_trade
+from logger.audit_logger import log_signal
 
-    latest_rsi = price_data["RSI_14"].iloc[-1]
-    latest_ema = price_data["EMA_21"].iloc[-1]
-    latest_close = price_data["close"].iloc[-1]
-    latest_volume = price_data["VOLUME"].iloc[-1]
+PENDING_SIGNAL_PATH = "logs/pending_signal.json"
 
-    # === DIP ===
-    if latest_rsi < 30 and latest_close < latest_ema and latest_volume < price_data["VOLUME"].mean():
-        return "dip"
+def detect_signal():
+    """
+    Dummy signal generator for testing.
+    Replace with real RSI/EMA/volume logic.
+    """
+    return {
+        "token": "ETH-PERP",
+        "action": "LONG",
+        "confidence": 0.85
+    }
 
-    # === BREAKOUT ===
-    if latest_rsi > 50 and latest_close > latest_ema and latest_volume > price_data["VOLUME"].mean() * 1.5:
-        return "breakout"
+def save_pending_signal(signal):
+    with open(PENDING_SIGNAL_PATH, "w") as f:
+        json.dump(signal, f)
 
-    # === SIDEWAYS ===
-    return "sideways"
+def process_signal(signal):
+    log_signal(signal)
+
+    if cfg.DRY_RUN:
+        simulate_trade(signal)
+    elif cfg.AUTO_MODE:
+        execute_trade(signal)
+    else:
+        save_pending_signal(signal)
+        print("Signal saved for manual confirmation.")
+
+def run_signal_loop():
+    signal = detect_signal()
+    if signal:
+        process_signal(signal)
