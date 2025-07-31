@@ -15,10 +15,10 @@ def main():
     try:
         while True:
             # 🔍 Detect and process signal
-            run_signal_loop()
+            run_signal_loop(cfg)
 
             # 📊 Monitor PnL after trade
-            run_pnl_monitor()
+            run_pnl_monitor(cfg)
 
             # ⏱️ Sleep between cycles (adjust as needed)
             time.sleep(60)
@@ -30,5 +30,5 @@ def main():
         _write_log("ERROR", f"Bot crashed: {str(e)}")
         print(f"[ERROR] {str(e)}")
 
-if __name__ == "__main__":
+if __name__ == "__main__"
     main()
