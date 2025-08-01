@@ -1,70 +1,20 @@
-from flask import Flask, render_template, request, redirect
-from dashboard.log_viewer import get_recent_logs
-from wallet.TOKEN_config import TOKEN_LIST
-from wallet.logger import log_info, log_error, log_event
-from wallet.trade_executer import execute_trade
-from utils.dry_run import is_dry_run, toggle_dry_run
+# dashboard/web_dashboard.py
+
+from flask import Flask, render_template
+import os
+from config import trade_config as cfg
 
 app = Flask(__name__)
+LOG_PATH = cfg.LOG_FILE
 
-# ✅ Mode toggle state (simple in-memory for now)
-current_mode = "AUTO"
-
-def get_current_mode():
-    return current_mode
-
-def toggle_mode():
-    global current_mode
-    current_mode = "MANUAL" if current_mode == "AUTO" else "AUTO"
-    log_event("MODE_TOGGLED", {"new_mode": current_mode})
-
-# ✅ Home page
 @app.route("/")
 def index():
-    logs = get_recent_logs(50)
-    mode = get_current_mode()
-    dry_run = is_dry_run()
-    return render_template("index.html", logs=logs, mode=mode, dry_run=dry_run, tokens=TOKEN_LIST)
-
-# ✅ Log viewer
-@app.route("/logs")
-def show_logs():
-    logs = get_recent_logs(100)
-    return render_template("logs.html", logs=logs)
-
-# ✅ Mode toggle
-@app.route("/toggle_mode", methods=["POST"])
-def toggle_mode_route():
-    toggle_mode()
-    return redirect("/")
-
-# ✅ Dry-run toggle
-@app.route("/toggle_dry_run", methods=["POST"])
-def toggle_dry_run_route():
-    new_state = toggle_dry_run()
-    log_event("DRY_RUN_TOGGLED", {"dry_run": new_state})
-    return redirect("/")
-
-# ✅ Manual trade trigger
-@app.route("/manual_trade", methods=["POST"])
-def manual_trade():
-    token = request.form.get("token")
-    try:
-        amount = float(request.form.get("amount", 0))
-    except ValueError:
-        log_error(f"Invalid amount submitted for {token}")
-        return redirect("/")
-
-    log_event("MANUAL_TRADE_REQUEST", {"token": token, "amount": amount})
-    log_info(f"Manual trade requested: {amount} {token}")
-
-    success = execute_trade(token, amount)
-    if not success:
-        log_error(f"Manual trade execution failed for {token}")
-    else:
-        log_info(f"Manual trade executed successfully for {token}")
-
-    return redirect("/")
+    # Read log file
+    logs = []
+    if os.path.exists(LOG_PATH):
+        with open(LOG_PATH, "r") as f:
+            logs = f.readlines()
+    return render_template("index.html", logs=logs, dry_run=cfg.DRY_RUN_MODE)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
