@@ -1,43 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Copilot Bot Dashboard</title>
+    <title>Trading Bot Dashboard</title>
+    <meta http-equiv="refresh" content="10">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #f0f0f0;
+            padding: 20px;
+        }
+        .header {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .status {
+            margin-bottom: 20px;
+        }
+        .logs {
+            display: none;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+    <script>
+        function toggleLogs() {
+            const logs = document.getElementById("logs");
+            logs.style.display = logs.style.display === "none" ? "block" : "none";
+        }
+    </script>
 </head>
 <body>
-    <h1>Copilot Bot Dashboard</h1>
+    <div class="header">📊 Trading Bot Dashboard</div>
+    <div class="status">
+        <strong>Dry Run Mode:</strong> {{ 'ON' if dry_run else 'OFF' }}
+    </div>
 
-    <h2>Current Mode: {{ mode }}</h2>
-    <form action="/toggle_mode" method="post">
-        <button type="submit">Toggle Mode</button>
-    </form>
-
-    <h2>Dry-Run Mode: {{ "ON" if dry_run else "OFF" }}</h2>
-    <form action="/toggle_dry_run" method="post">
-        <button type="submit">Toggle Dry-Run</button>
-    </form>
-
-    <h2>Manual Trade</h2>
-    <form action="/manual_trade" method="post">
-        <label for="token">Token:</label>
-        <select name="token" id="token">
-            {% for token in tokens %}
-                <option value="{{ token }}">{{ token }}</option>
+    <button onclick="toggleLogs()">Toggle Audit Logs</button>
+    <div id="logs" class="logs">
+        <h3>Audit Logs</h3>
+        <ul>
+            {% for line in logs %}
+                <li>{{ line }}</li>
             {% endfor %}
-        </select>
-
-        <label for="amount">Amount:</label>
-        <input type="number" name="amount" step="0.01" placeholder="Amount">
-
-        <button type="submit">Execute Trade</button>
-    </form>
-
-    <h2>Recent Logs</h2>
-    <pre>
-        {% for line in logs %}
-            {{ line }}
-        {% endfor %}
-    </pre>
-
-    <a href="/logs">View Full Logs</a>
+        </ul>
+    </div>
 </body>
 </html>
