@@ -424,29 +424,40 @@ def run_signal_loop(cfg):
             print(f"[SIGNAL] Based on {final_analysis['signal_count']} individual signals")
             
             if cfg.DRY_RUN:
-                # Execute simulated trade
+                # Execute simulated trade with user approval
                 from core.simulation_engine import simulator
+                from dashboard.minimal_dashboard import dashboard
                 
                 # Calculate trade size based on confidence
                 base_size = getattr(cfg, 'TRADE_SIZE_USD', 100)
                 confidence_multiplier = min(final_analysis['confidence'] / 3.0, 2.0)  # Cap at 2x
                 trade_size = base_size * confidence_multiplier
                 
-                print(f"[DRY RUN] Executing simulated {final_analysis['signal']} trade: ${trade_size:.2f}")
-                
-                position_id = simulator.open_position(
-                    symbol="ETH",
-                    side=final_analysis['signal'],
-                    trade_size_usd=trade_size,
-                    leverage=getattr(cfg, 'LEVERAGE', 1.0),
-                    stop_loss_pct=getattr(cfg, 'STOP_LOSS_PCT', 0.02),
-                    take_profit_pct=getattr(cfg, 'TAKE_PROFIT_PCT', 0.04)
+                # Check if user approves the trade
+                trade_approved = dashboard.confirm_trade(
+                    signal=final_analysis['signal'],
+                    confidence=final_analysis['confidence'],
+                    trade_size=trade_size
                 )
                 
-                if position_id:
-                    print(f"[DRY RUN] ✅ Position opened: {position_id}")
+                if trade_approved:
+                    print(f"[DRY RUN] ✅ Trade approved - Executing simulated {final_analysis['signal']} trade: ${trade_size:.2f}")
+                    
+                    position_id = simulator.open_position(
+                        symbol="ETH",
+                        side=final_analysis['signal'],
+                        trade_size_usd=trade_size,
+                        leverage=getattr(cfg, 'LEVERAGE', 1.0),
+                        stop_loss_pct=getattr(cfg, 'STOP_LOSS_PCT', 0.02),
+                        take_profit_pct=getattr(cfg, 'TAKE_PROFIT_PCT', 0.04)
+                    )
+                    
+                    if position_id:
+                        print(f"[DRY RUN] ✅ Position opened: {position_id}")
+                    else:
+                        print(f"[DRY RUN] ❌ Failed to open position")
                 else:
-                    print(f"[DRY RUN] ❌ Failed to open position")
+                    print(f"[DRY RUN] ❌ Trade declined by user")
             else:
                 print(f"[LIVE] Signal ready for execution: {final_analysis['signal']}")
                 # TODO: Implement live trading logic here
