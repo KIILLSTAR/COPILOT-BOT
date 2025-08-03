@@ -1,11 +1,3 @@
-pandas
 requests
 solana
-rich
-textual
-tabulate
-flask
-numpy
-asyncio
-websocket-client
-python-dotenv
+base58
