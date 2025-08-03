@@ -1,7 +1,7 @@
 # main.py
 
 from strategy.signal_detector import run_signal_loop
-from core.pnl_monitor import run_pnl_monitor
+from core.pnl_moniter import run_pnl_monitor
 from config import trade_config as cfg
 from logger.audit_logger import _write_log
 import time
@@ -30,5 +30,5 @@ def main():
         _write_log("ERROR", f"Bot crashed: {str(e)}")
         print(f"[ERROR] {str(e)}")
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     main()

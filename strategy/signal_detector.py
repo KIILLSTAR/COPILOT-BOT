@@ -37,7 +37,7 @@ def execute_trade(signal, dry_run=True, confirm_fn=None):
     time.sleep(1)  # Simulate execution time
     logging.info(f"Trade executed: {signal}")
 
-def run_signal_loop():
+def run_signal_loop(cfg):
     """
     Main signal detection loop.
     """
