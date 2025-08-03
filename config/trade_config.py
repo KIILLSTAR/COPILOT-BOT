@@ -1,8 +1,20 @@
 # config/trade_config.py
 
+# Import safety configuration first
+from config.safety_config import safety
+
+# === CRITICAL SAFETY CHECK ===
+# This FORCES dry run mode if ANY safety mechanism is active
+FORCED_DRY_RUN = safety.is_dry_run_forced()
+
 # === Mode Toggles ===
-DRY_RUN = True         # True = simulate trades, False = live execution
+# DRY_RUN is now controlled by safety mechanisms
+DRY_RUN = True or FORCED_DRY_RUN  # ALWAYS True if safety is enabled
 AUTO_MODE = False      # True = auto-confirm trades, False = manual confirmation
+
+# Safety override check
+if not DRY_RUN and FORCED_DRY_RUN:
+    DRY_RUN = True  # Force dry run for safety
 
 # === Strategy Parameters ===
 SIGNAL_THRESHOLD = 0.75  # Minimum confidence to trigger a signal

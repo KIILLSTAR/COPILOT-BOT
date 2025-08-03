@@ -1,6 +1,7 @@
 """
 Trading Simulation Engine
 Handles dry run mode with real-time data and realistic trade execution simulation
+SAFETY: This engine ONLY simulates trades - never executes real trades
 """
 import json
 import time
@@ -112,7 +113,14 @@ class TradingSimulator:
                      take_profit_pct: float = 0.04) -> Optional[str]:
         """
         Open a simulated position with real market data
+        SAFETY: This is SIMULATION ONLY - no real money is used
         """
+        # CRITICAL SAFETY CHECK
+        from config.safety_config import safety
+        if not safety.is_dry_run_forced():
+            print("🛑 SAFETY VIOLATION: Attempted real trade blocked!")
+            print("🔒 Simulation engine only handles fake trades")
+            return None
         current_price = self.get_real_time_price(symbol)
         position_size = self.calculate_position_size(trade_size_usd, leverage, current_price)
         notional_value = position_size * current_price

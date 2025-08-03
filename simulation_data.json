@@ -1,6 +1,6 @@
 {
   "starting_balance": 10000.0,
-  "current_balance": 9996.900823458149,
+  "current_balance": 9996.600823458148,
   "positions": {
     "ETH_short_1754228414": {
       "id": "ETH_short_1754228414",
@@ -41,14 +41,33 @@
       "take_profit": 3670.17,
       "fees_paid": 2.0,
       "funding_paid": -0.35082345814915084
+    },
+    {
+      "id": "ETH_long_1754228825",
+      "symbol": "ETH",
+      "side": "long",
+      "entry_price": 3493.44,
+      "size": 0.02862508015022442,
+      "leverage": 1.0,
+      "entry_time": "2025-08-03T13:47:05.528342+00:00",
+      "current_price": 3493.44,
+      "unrealized_pnl": 0.0,
+      "realized_pnl": -0.2,
+      "status": "closed",
+      "exit_price": 3493.44,
+      "exit_time": "2025-08-03T13:47:05.574654+00:00",
+      "stop_loss": 3423.5712,
+      "take_profit": 3633.1776,
+      "fees_paid": 0.2,
+      "funding_paid": 0.0
     }
   ],
   "metrics": {
-    "total_trades": 1,
+    "total_trades": 2,
     "winning_trades": 0,
-    "losing_trades": 1,
-    "total_pnl": -1.6491765418508493,
-    "total_fees": 2.45,
+    "losing_trades": 2,
+    "total_pnl": -1.8491765418508492,
+    "total_fees": 2.6500000000000004,
     "total_funding": -0.35082345814915084,
     "win_rate": 0.0,
     "avg_win": 0.0,
@@ -58,6 +77,6 @@
     "sharpe_ratio": 0.0,
     "max_drawdown": 0.0,
     "starting_balance": 10000.0,
-    "current_balance": 9996.900823458149
+    "current_balance": 9996.600823458148
   }
 }

@@ -80,14 +80,23 @@ def main():
     print("Minimal Interface Edition")
     print()
     
-    # Initialize
+    # CRITICAL: Show safety status first
+    from config.safety_config import safety
     from core.simulation_engine import simulator
+    
+    safety.print_safety_status()
+    
+    # Initialize
     bot = MinimalTradingBot()
     
     # Show initial status
     portfolio = simulator.get_portfolio_summary()
     print(f"💰 Starting Balance: ${portfolio['balance']:,.0f}")
-    print(f"🧪 Mode: {'DRY RUN' if cfg.DRY_RUN else 'LIVE TRADING'}")
+    
+    if safety.is_dry_run_forced():
+        print("🛡️ Mode: PROTECTED DRY RUN - Your funds are safe")
+    else:
+        print("⚠️ Mode: LIVE TRADING ENABLED - Real money at risk!")
     print()
     
     try:

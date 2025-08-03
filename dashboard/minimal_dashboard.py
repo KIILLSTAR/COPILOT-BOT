@@ -23,16 +23,32 @@ class MinimalDashboard:
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def header(self):
-        """Simple header"""
+        """Simple header with safety status"""
         from config import trade_config as cfg
+        from config.safety_config import safety
         from core.simulation_engine import simulator
         
-        mode = "DRY RUN" if cfg.DRY_RUN else "LIVE"
+        # Safety check first
+        forced_dry_run = safety.is_dry_run_forced()
+        
+        if forced_dry_run:
+            mode = "🔒 SAFE DRY RUN"
+            safety_symbol = "🛡️"
+        else:
+            mode = "⚠️ LIVE TRADING"
+            safety_symbol = "⚠️"
+            
         auto = "AUTO" if self.auto_approve else "MANUAL"
         
         print("┌─────────────────────────────────────────────────────────────┐")
-        print(f"│  ETH PERPS BOT  │  {mode:<8}  │  {auto:<7}  │  {datetime.now().strftime('%H:%M:%S')}  │")
+        print(f"│ {safety_symbol} ETH PERPS BOT │ {mode:<12} │ {auto:<7} │ {datetime.now().strftime('%H:%M:%S')} │")
         print("└─────────────────────────────────────────────────────────────┘")
+        
+        # Safety status line
+        if forced_dry_run:
+            print("  🔒 SAFETY ACTIVE - YOUR FUNDS ARE PROTECTED")
+        else:
+            print("  ⚠️ WARNING: LIVE TRADING ENABLED - REAL MONEY AT RISK")
         
         # Quick stats
         portfolio = simulator.get_portfolio_summary()
@@ -51,6 +67,7 @@ class MinimalDashboard:
         print("  [a] Toggle auto-approve")
         print("  [t] Show transactions")
         print("  [h] Help")
+        print("  [x] Safety status")
         print("  [q] Quit")
         print()
     
@@ -65,10 +82,13 @@ class MinimalDashboard:
         print("│  a  - Toggle between auto and manual approval     │")
         print("│  t  - Show/hide transaction history               │")
         print("│  h  - Show/hide this help menu                    │")
+        print("│  x  - Show detailed safety status                 │")
         print("│  q  - Quit the application                        │")
         print("│                                                    │")
         print("│  Auto Mode: Bot trades automatically              │")
         print("│  Manual Mode: You approve each trade              │")
+        print("│                                                    │")
+        print("│  🔒 SAFETY: Multiple layers protect your funds    │")
         print("│                                                    │")
         print("└────────────────────────────────────────────────────┘")
         print()
@@ -120,6 +140,26 @@ class MinimalDashboard:
         print(f"Status: {status}  │  Open Positions: {open_positions}")
         print()
     
+    def show_safety_status(self):
+        """Display detailed safety status"""
+        from config.safety_config import safety
+        
+        self.clear()
+        safety.print_safety_status()
+        
+        print("How to enable live trading (NOT RECOMMENDED):")
+        print("1. Edit config/safety_config.py - set SAFETY_LOCK_ENABLED = False")
+        print("2. Set environment: ENABLE_LIVE_TRADING=TRUE")
+        print("3. Create file: .live_trading_confirmed")
+        print("4. Set environment: WALLET_APPROVED_LIVE_TRADING=TRUE")
+        print()
+        print("⚠️  ALL 4 steps required - any missing step forces dry run")
+        print("💚 RECOMMENDATION: Keep safety enabled for testing")
+        print()
+        input("Press Enter to continue...")
+        
+        return True
+    
     def display(self):
         """Display the complete dashboard"""
         self.clear()
@@ -142,6 +182,9 @@ class MinimalDashboard:
             self.show_help = not self.show_help
         elif cmd == 't':
             self.show_transactions = not self.show_transactions
+        elif cmd == 'x':
+            self.show_safety_status()
+            return True
         elif cmd == 'a':
             self.auto_approve = not self.auto_approve
             mode = "AUTO" if self.auto_approve else "MANUAL"
