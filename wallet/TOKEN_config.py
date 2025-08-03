@@ -35,7 +35,7 @@ TOKEN_META = {
         "name": "Jupiter"
     },
     "ETH": {
-        "mint": "2ndETHmintAddressHere",
+        "mint": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
         "decimals": 8,
         "name": "Ethereum (Wormhole)"
     },

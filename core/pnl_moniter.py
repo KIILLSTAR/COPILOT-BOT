@@ -23,7 +23,7 @@ def check_pnl_thresholds():
         log_auto_close(pnl)
         print(f"[AUTO-CLOSE] Loss threshold hit: ${pnl}")
 
-def run_pnl_monitor():
+def run_pnl_monitor(cfg):
     """
     Call this periodically or after each trade.
     """
