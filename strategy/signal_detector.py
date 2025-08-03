@@ -424,9 +424,32 @@ def run_signal_loop(cfg):
             print(f"[SIGNAL] Based on {final_analysis['signal_count']} individual signals")
             
             if cfg.DRY_RUN:
-                print(f"[DRY RUN] Would execute {final_analysis['signal']} trade")
+                # Execute simulated trade
+                from core.simulation_engine import simulator
+                
+                # Calculate trade size based on confidence
+                base_size = getattr(cfg, 'TRADE_SIZE_USD', 100)
+                confidence_multiplier = min(final_analysis['confidence'] / 3.0, 2.0)  # Cap at 2x
+                trade_size = base_size * confidence_multiplier
+                
+                print(f"[DRY RUN] Executing simulated {final_analysis['signal']} trade: ${trade_size:.2f}")
+                
+                position_id = simulator.open_position(
+                    symbol="ETH",
+                    side=final_analysis['signal'],
+                    trade_size_usd=trade_size,
+                    leverage=getattr(cfg, 'LEVERAGE', 1.0),
+                    stop_loss_pct=getattr(cfg, 'STOP_LOSS_PCT', 0.02),
+                    take_profit_pct=getattr(cfg, 'TAKE_PROFIT_PCT', 0.04)
+                )
+                
+                if position_id:
+                    print(f"[DRY RUN] ✅ Position opened: {position_id}")
+                else:
+                    print(f"[DRY RUN] ❌ Failed to open position")
             else:
                 print(f"[LIVE] Signal ready for execution: {final_analysis['signal']}")
+                # TODO: Implement live trading logic here
         else:
             print("[SIGNAL] No strong signal detected")
         

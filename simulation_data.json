@@ -1,0 +1,63 @@
+{
+  "starting_balance": 10000.0,
+  "current_balance": 9996.900823458149,
+  "positions": {
+    "ETH_short_1754228414": {
+      "id": "ETH_short_1754228414",
+      "symbol": "ETH",
+      "side": "short",
+      "entry_price": 3495.4,
+      "size": 0.12874063054299936,
+      "leverage": 1.5,
+      "entry_time": "2025-08-03T13:40:14.762727+00:00",
+      "current_price": 3495.4,
+      "unrealized_pnl": 0.0,
+      "realized_pnl": 0.0,
+      "status": "open",
+      "exit_price": null,
+      "exit_time": null,
+      "stop_loss": 3582.785,
+      "take_profit": 3355.584,
+      "fees_paid": 0.45,
+      "funding_paid": 0.5472021681759316
+    }
+  },
+  "trade_history": [
+    {
+      "id": "ETH_long_1754228412",
+      "symbol": "ETH",
+      "side": "long",
+      "entry_price": 3495.4,
+      "size": 0.28609029009555415,
+      "leverage": 2.0,
+      "entry_time": "2025-08-03T13:40:12.718288+00:00",
+      "current_price": 3495.4,
+      "unrealized_pnl": 0.0,
+      "realized_pnl": -1.6491765418508493,
+      "status": "closed",
+      "exit_price": 3495.4,
+      "exit_time": "2025-08-03T13:40:32.362369+00:00",
+      "stop_loss": 3390.538,
+      "take_profit": 3670.17,
+      "fees_paid": 2.0,
+      "funding_paid": -0.35082345814915084
+    }
+  ],
+  "metrics": {
+    "total_trades": 1,
+    "winning_trades": 0,
+    "losing_trades": 1,
+    "total_pnl": -1.6491765418508493,
+    "total_fees": 2.45,
+    "total_funding": -0.35082345814915084,
+    "win_rate": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "largest_win": 0.0,
+    "largest_loss": -1.6491765418508493,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "starting_balance": 10000.0,
+    "current_balance": 9996.900823458149
+  }
+}
