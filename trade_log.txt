@@ -16,3 +16,15 @@
 [SIGNAL] 2025-08-04T07:51:40.945113 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:51:40.945108+00:00'}
 [SIGNAL] 2025-08-04T07:52:41.515046 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:52:41.515021+00:00'}
 [SIGNAL] 2025-08-04T07:52:41.515169 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:52:41.515163+00:00'}
+[SHUTDOWN] 2025-08-04T07:53:20.515920 | Bot stopped by user
+[BOOT] 2025-08-04T07:53:23.967067 | Bot initialized
+[SIGNAL] 2025-08-04T07:53:24.891386 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:53:24.891366+00:00'}
+[SIGNAL] 2025-08-04T07:53:24.891462 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:53:24.891457+00:00'}
+[SIGNAL] 2025-08-04T07:54:25.746301 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:54:25.746264+00:00'}
+[SIGNAL] 2025-08-04T07:54:25.746397 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:54:25.746392+00:00'}
+[SIGNAL] 2025-08-04T07:55:26.619960 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:55:26.619908+00:00'}
+[SIGNAL] 2025-08-04T07:55:26.620084 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:55:26.620079+00:00'}
+[SIGNAL] 2025-08-04T07:56:27.570062 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:56:27.570036+00:00'}
+[SIGNAL] 2025-08-04T07:56:27.570150 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:56:27.570146+00:00'}
+[SIGNAL] 2025-08-04T07:57:28.284624 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:57:28.284598+00:00'}
+[SIGNAL] 2025-08-04T07:57:28.284729 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:57:28.284724+00:00'}
