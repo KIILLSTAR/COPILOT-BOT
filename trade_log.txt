@@ -44,3 +44,4 @@
 [SIGNAL] 2025-08-04T08:03:08.458770 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T08:03:08.458764+00:00'}
 [SIGNAL] 2025-08-04T08:04:09.381364 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T08:04:09.381298+00:00'}
 [SIGNAL] 2025-08-04T08:04:09.381510 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T08:04:09.381504+00:00'}
+[SHUTDOWN] 2025-08-04T08:05:09.059824 | Bot stopped by user
