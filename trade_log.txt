@@ -1,0 +1,18 @@
+[BOOT] 2025-08-04T07:45:35.468483 | Bot initialized
+[SIGNAL] 2025-08-04T07:45:36.379721 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:45:36.379681+00:00'}
+[SIGNAL] 2025-08-04T07:45:36.379820 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:45:36.379815+00:00'}
+[SIGNAL] 2025-08-04T07:46:37.283127 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:46:37.283097+00:00'}
+[SIGNAL] 2025-08-04T07:46:37.283248 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:46:37.283243+00:00'}
+[SIGNAL] 2025-08-04T07:47:38.168049 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:47:38.168014+00:00'}
+[SIGNAL] 2025-08-04T07:47:38.168184 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:47:38.168179+00:00'}
+[SIGNAL] 2025-08-04T07:48:38.918904 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:48:38.918873+00:00'}
+[SIGNAL] 2025-08-04T07:48:38.919007 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:48:38.919001+00:00'}
+[SIGNAL] 2025-08-04T07:49:39.634266 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:49:39.634233+00:00'}
+[SIGNAL] 2025-08-04T07:49:39.634417 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:49:39.634411+00:00'}
+[SIGNAL] 2025-08-04T07:50:40.388780 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:50:40.388744+00:00'}
+[SIGNAL] 2025-08-04T07:50:40.388881 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:50:40.388876+00:00'}
+[PNL_ALERT] 2025-08-04T07:50:40.389061 | {'pnl': 20.96}
+[SIGNAL] 2025-08-04T07:51:40.944984 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:51:40.944955+00:00'}
+[SIGNAL] 2025-08-04T07:51:40.945113 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:51:40.945108+00:00'}
+[SIGNAL] 2025-08-04T07:52:41.515046 | {'signal': None, 'confidence': 0, 'signal_count': 0, 'strategies_used': [], 'timestamp': '2025-08-04T07:52:41.515021+00:00'}
+[SIGNAL] 2025-08-04T07:52:41.515169 | {'error': "module 'config.trade_config' has no attribute 'get'", 'timestamp': '2025-08-04T07:52:41.515163+00:00'}

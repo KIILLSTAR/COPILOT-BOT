@@ -10,7 +10,10 @@ def _write_log(entry_type, details):
     timestamp = datetime.utcnow().isoformat()
     log_entry = f"[{entry_type}] {timestamp} | {details}\n"
 
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+    # Only create directory if LOG_PATH has a directory component
+    log_dir = os.path.dirname(LOG_PATH)
+    if log_dir:
+        os.makedirs(log_dir, exist_ok=True)
     with open(LOG_PATH, "a") as f:
         f.write(log_entry)
 
