@@ -219,23 +219,18 @@ class FixedMobileTradingBot:
         """Update open positions"""
         if not self.positions:
             return
-            
         current_price = self.get_eth_price_simple()
-        
         for position in self.positions:
             if position['status'] != 'open':
                 continue
-                
             # Calculate PnL
             if position['side'] == 'long':
                 pnl_pct = (current_price - position['entry_price']) / position['entry_price']
             else:
                 pnl_pct = (position['entry_price'] - current_price) / position['entry_price']
-            
             pnl_usd = position['size'] * pnl_pct
-            
-            # Take profit/stop loss
-            if pnl_pct >= 0.015:  # 1.5% profit
+            # Lowered thresholds for more frequent closes
+            if pnl_pct >= 0.005:  # 0.5% profit
                 position['status'] = 'closed'
                 position['exit_price'] = current_price
                 position['exit_time'] = datetime.now().isoformat()
@@ -243,8 +238,7 @@ class FixedMobileTradingBot:
                 self.balance += position['size'] + pnl_usd
                 self.trade_history.append(position)
                 print(f"🎯 Take profit hit: +${pnl_usd:.2f}")
-                
-            elif pnl_pct <= -0.008:  # 0.8% loss
+            elif pnl_pct <= -0.003:  # 0.3% loss
                 position['status'] = 'closed'
                 position['exit_price'] = current_price
                 position['exit_time'] = datetime.now().isoformat()
