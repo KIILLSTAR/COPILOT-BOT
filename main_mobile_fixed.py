@@ -29,32 +29,36 @@ class FixedMobileTradingBot:
                 timeout=10
             )
             if response.status_code == 200:
-                return float(response.json()["ethereum"]["usd"])
+                price = float(response.json()["ethereum"]["usd"])
+                print(f"✅ CoinGecko price: ${price:,.2f}")
+                return price
         except Exception as e:
             print(f"CoinGecko failed: {e}")
         
         try:
-            # Fallback to Jupiter
+            # Fallback to Binance
             response = requests.get(
-                "https://price.jup.ag/v4/price",
-                params={"ids": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"},
+                "https://api.binance.com/api/v3/ticker/price",
+                params={"symbol": "ETHUSDT"},
                 timeout=10
             )
             if response.status_code == 200:
-                data = response.json()
-                if "data" in data and "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" in data["data"]:
-                    return float(data["data"]["7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"]["price"])
+                price = float(response.json()["price"])
+                print(f"✅ Binance price: ${price:,.2f}")
+                return price
         except Exception as e:
-            print(f"Jupiter failed: {e}")
+            print(f"Binance failed: {e}")
         
-        # Final fallback
-        return 3000.0
+        # Final fallback - simulate realistic price
+        import random
+        base_price = 3200 + random.uniform(-100, 100)
+        print(f"⚠️ Using simulated price: ${base_price:,.2f}")
+        return base_price
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""
         try:
             current_price = self.get_eth_price_simple()
-            print(f"📊 Current ETH Price: ${current_price:,.2f}")
             
             # Add current price to history
             self.price_history.append(current_price)
@@ -79,16 +83,16 @@ class FixedMobileTradingBot:
                 
                 print(f"📊 Price change: {price_change:+.2%}")
                 
-                if price_change > 0.005:  # 0.5% increase
+                if price_change > 0.003:  # 0.3% increase (more sensitive)
                     signals.append({
                         'signal': 'long',
-                        'confidence': min(abs(price_change) * 15, 3.0),
+                        'confidence': min(abs(price_change) * 20, 3.0),
                         'reason': f'Price up {price_change:.2%}'
                     })
-                elif price_change < -0.005:  # 0.5% decrease
+                elif price_change < -0.003:  # 0.3% decrease (more sensitive)
                     signals.append({
                         'signal': 'short',
-                        'confidence': min(abs(price_change) * 15, 3.0),
+                        'confidence': min(abs(price_change) * 20, 3.0),
                         'reason': f'Price down {price_change:.2%}'
                     })
             
@@ -100,13 +104,13 @@ class FixedMobileTradingBot:
                 trend_change = (recent_avg - older_avg) / older_avg
                 print(f"📈 Trend change: {trend_change:+.2%}")
                 
-                if trend_change > 0.003:  # 0.3% uptrend
+                if trend_change > 0.002:  # 0.2% uptrend (more sensitive)
                     signals.append({
                         'signal': 'long',
                         'confidence': 1.8,
                         'reason': f'Uptrend detected ({trend_change:.2%})'
                     })
-                elif trend_change < -0.003:  # 0.3% downtrend
+                elif trend_change < -0.002:  # 0.2% downtrend (more sensitive)
                     signals.append({
                         'signal': 'short',
                         'confidence': 1.8,
@@ -116,7 +120,7 @@ class FixedMobileTradingBot:
             # 3. Volatility breakout
             if len(self.price_history) >= 3:
                 volatility = abs(current_price - self.price_history[-2]) / self.price_history[-2]
-                if volatility > 0.008:  # 0.8% volatility
+                if volatility > 0.005:  # 0.5% volatility (more sensitive)
                     direction = 'long' if current_price > self.price_history[-2] else 'short'
                     signals.append({
                         'signal': direction,
@@ -125,7 +129,7 @@ class FixedMobileTradingBot:
                     })
             
             # 4. RSI-like indicator
-            if len(self.price_history) >= 10:
+            if len(self.price_history) >= 8:
                 gains = []
                 losses = []
                 for i in range(1, len(self.price_history)):
@@ -137,29 +141,29 @@ class FixedMobileTradingBot:
                         gains.append(0)
                         losses.append(abs(change))
                 
-                avg_gain = sum(gains[-10:]) / 10 if gains else 0
-                avg_loss = sum(losses[-10:]) / 10 if losses else 0
+                avg_gain = sum(gains[-8:]) / 8 if gains else 0
+                avg_loss = sum(losses[-8:]) / 8 if losses else 0
                 
                 rsi = 100 - (100 / (1 + (avg_gain / avg_loss))) if avg_loss > 0 else 50
                 print(f"📊 RSI: {rsi:.1f}")
                 
-                if rsi < 30:
+                if rsi < 35:  # More sensitive
                     signals.append({
                         'signal': 'long',
                         'confidence': 2.2,
                         'reason': f'RSI oversold ({rsi:.1f})'
                     })
-                elif rsi > 70:
+                elif rsi > 65:  # More sensitive
                     signals.append({
                         'signal': 'short',
                         'confidence': 2.2,
                         'reason': f'RSI overbought ({rsi:.1f})'
                     })
             
-            # 5. Random signals for testing (after 5 cycles)
-            if self.cycle_count >= 5 and self.cycle_count % 4 == 0:
+            # 5. Random signals for testing (after 3 cycles)
+            if self.cycle_count >= 3 and self.cycle_count % 3 == 0:
                 import random
-                if random.random() < 0.3:  # 30% chance
+                if random.random() < 0.4:  # 40% chance (more frequent)
                     direction = random.choice(['long', 'short'])
                     signals.append({
                         'signal': direction,
