@@ -1,8 +1,8 @@
 language = "python3"
-run = "python main_offline.py"
+run = "python main_mobile_fixed.py"
 
 [nix]
-channel = "stable-23_11"
+channel = "stable-25_05"
 
 [env]
 PYTHONPATH = "${PYTHONPATH}:/home/runner/${REPL_SLUG}"
