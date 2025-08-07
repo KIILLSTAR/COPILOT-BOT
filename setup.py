@@ -1,103 +1,83 @@
 #!/usr/bin/env python3
 """
-Jupiter ETH Perps Trading Bot Setup
-Guides you through secure configuration
+Simple setup script for the ETH Trading Bot
+Handles dependencies and environment setup
 """
-import os
-import sys
-import subprocess
-from pathlib import Path
 
-def check_python_version():
-    """Ensure Python 3.8+ is installed"""
-    if sys.version_info < (3, 8):
-        print("❌ Python 3.8+ required. Current version:", sys.version)
-        return False
-    print(f"✅ Python {sys.version.split()[0]} detected")
+import subprocess
+import sys
+import os
+
+def install_dependencies():
+    """Install required packages"""
+    print("📦 Installing dependencies...")
+    
+    packages = [
+        "requests>=2.25.0",
+        "pandas>=1.3.0", 
+        "numpy>=1.21.0",
+        "solana>=0.36.0",
+        "base58>=2.0.0"
+    ]
+    
+    for package in packages:
+        try:
+            print(f"   Installing {package}...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+            print(f"   ✅ {package} installed")
+        except subprocess.CalledProcessError as e:
+            print(f"   ❌ Failed to install {package}: {e}")
+            return False
+    
     return True
 
-def install_requirements():
-    """Install required packages"""
-    print("\n📦 Installing requirements...")
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-        print("✅ Requirements installed successfully")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to install requirements: {e}")
-        return False
-
-def setup_environment():
-    """Setup .env file"""
-    print("\n🔧 Setting up environment configuration...")
+def test_imports():
+    """Test that all imports work"""
+    print("\n🧪 Testing imports...")
     
-    if os.path.exists('.env'):
-        print("⚠️  .env file already exists. Backup created as .env.backup")
-        os.rename('.env', '.env.backup')
+    imports = [
+        "requests",
+        "pandas", 
+        "numpy",
+        "solana",
+        "base58"
+    ]
     
-    # Copy template
-    if os.path.exists('.env.example'):
-        print("📋 Creating .env from template...")
-        with open('.env.example', 'r') as src, open('.env', 'w') as dst:
-            dst.write(src.read())
-        print("✅ .env file created")
-        print("\n🚨 IMPORTANT: Edit .env file with your actual values:")
-        print("   - Add your Solana wallet private key")
-        print("   - Verify RPC endpoint")
-        print("   - Adjust trading parameters")
-        return True
-    else:
-        print("❌ .env.example not found")
-        return False
-
-def verify_setup():
-    """Test the configuration"""
-    print("\n🧪 Testing configuration...")
-    try:
-        from wallet.secure_wallet import wallet_manager
-        if wallet_manager.is_ready():
-            balance = wallet_manager.get_balance()
-            print(f"✅ Wallet connected. SOL balance: {balance:.4f}")
-            return True
-        else:
-            print("❌ Wallet not ready. Check your .env configuration")
+    for module in imports:
+        try:
+            __import__(module)
+            print(f"   ✅ {module} imported successfully")
+        except ImportError as e:
+            print(f"   ❌ Failed to import {module}: {e}")
             return False
-    except Exception as e:
-        print(f"❌ Configuration test failed: {e}")
-        return False
+    
+    return True
 
 def main():
-    """Main setup process"""
-    print("🚀 Jupiter ETH Perps Trading Bot Setup")
-    print("=" * 50)
+    """Main setup function"""
+    print("🚀 ETH Trading Bot Setup")
+    print("=" * 40)
     
-    # Check Python version
-    if not check_python_version():
+    # Install dependencies
+    if not install_dependencies():
+        print("\n❌ Setup failed during dependency installation")
         return False
     
-    # Install requirements
-    if not install_requirements():
+    # Test imports
+    if not test_imports():
+        print("\n❌ Setup failed during import testing")
         return False
     
-    # Setup environment
-    if not setup_environment():
-        return False
-    
-    print("\n" + "=" * 50)
-    print("✅ Setup complete!")
-    print("\n📝 Next steps:")
-    print("1. Edit .env file with your wallet credentials")
-    print("2. Run: python3 setup.py --test")
-    print("3. Start trading: python3 main.py")
-    print("\n⚠️  SECURITY REMINDER:")
-    print("   - Never share your private key")
-    print("   - Never commit .env to version control")
-    print("   - Start with small trade sizes")
+    print("\n🎉 Setup Complete!")
+    print("=" * 40)
+    print("\n📱 Next Steps:")
+    print("1. Run: python main_mobile_fixed.py")
+    print("2. Or try: python main_minimal.py")
+    print("3. Or try: python main.py")
     
     return True
 
 if __name__ == "__main__":
-    if "--test" in sys.argv:
-        verify_setup()
-    else:
-        main()
+    success = main()
+    if not success:
+        sys.exit(1)
