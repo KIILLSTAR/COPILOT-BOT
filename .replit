@@ -1,23 +1,12 @@
 language = "python3"
-run = "python main_offline.py"
-
-[nix]
-channel = "stable-23_11"
+run = "python main_simple.py"
 
 [env]
 PYTHONPATH = "${PYTHONPATH}:/home/runner/${REPL_SLUG}"
 
 [packager]
 language = "python3"
-ignoredPackages = ["unit_tests"]
 
 [packager.features]
 packageSearch = true
 guessImports = true
-
-[languages.python3]
-pattern = "**/*.py"
-syntax = "python"
-
-[languages.python3.languageServer]
-start = [ "python", "-m", "pylsp" ]
