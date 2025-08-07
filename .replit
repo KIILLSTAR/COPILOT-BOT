@@ -1,5 +1,5 @@
 language = "python3"
-run = "python main_mobile_fixed.py"
+run = "python main_simple.py"
 
 [env]
 PYTHONPATH = "${PYTHONPATH}:/home/runner/${REPL_SLUG}"
