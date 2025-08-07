@@ -31,6 +31,7 @@ class FixedMobileTradingBot:
             if response.status_code == 200:
                 price = float(response.json()["ethereum"]["usd"])
                 print(f"✅ CoinGecko price: ${price:,.2f}")
+                self.last_valid_price = price
                 return price
         except Exception as e:
             print(f"CoinGecko failed: {e}")
@@ -45,20 +46,24 @@ class FixedMobileTradingBot:
             if response.status_code == 200:
                 price = float(response.json()["price"])
                 print(f"✅ Binance price: ${price:,.2f}")
+                self.last_valid_price = price
                 return price
         except Exception as e:
             print(f"Binance failed: {e}")
         
-        # Final fallback - simulate realistic price
-        import random
-        base_price = 3200 + random.uniform(-100, 100)
-        print(f"⚠️ Using simulated price: ${base_price:,.2f}")
-        return base_price
+        if hasattr(self, 'last_valid_price'):
+            print(f"⚠️ Using last known price: ${self.last_valid_price:,.2f}")
+            return self.last_valid_price
+        print("⚠️ No price data available. Skipping this cycle.")
+        return None
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""
         try:
             current_price = self.get_eth_price_simple()
+            if current_price is None:
+                print("⚠️ Skipping signal detection due to missing price.")
+                return {'signal': None, 'reason': 'No price data'}
             
             # Add current price to history
             self.price_history.append(current_price)
