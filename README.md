@@ -4,8 +4,16 @@
 
 Built for learning, testing, and eventually scaling to live trading with complete confidence.
 
-## 🚀 Quick Start (Recommended)
+## 🚀 Quick Start Options
 
+### 📱 **Mobile Users (Recommended)**
+Deploy to Replit for the best mobile experience:
+1. Go to [replit.com](https://replit.com)
+2. Create new Repl → Import from GitHub
+3. Enter this repository URL
+4. Click "Run" - bot starts automatically!
+
+### 💻 **Desktop Users**
 ```bash
 # 1. Install core dependencies
 pip install --break-system-packages requests solana base58
@@ -16,6 +24,13 @@ python3 test_safety.py
 # 3. Start the minimal, clean interface
 python3 main_minimal.py
 ```
+
+### 📱 **Mobile Deployment Benefits**
+- ✅ Works on any device with a browser
+- ✅ No installation required
+- ✅ Always-on cloud execution
+- ✅ Mobile-optimized interface
+- ✅ Automatic dependency management
 
 That's it! Your funds are 100% protected by multiple safety layers.
 
