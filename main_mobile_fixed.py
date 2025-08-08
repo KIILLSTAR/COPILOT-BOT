@@ -47,8 +47,14 @@ class FixedMobileTradingBot:
         except Exception as e:
             print(f"Jupiter failed: {e}")
         
-        # Final fallback
-        return 3000.0
+        # Final fallback - use last known price if available, otherwise use reasonable estimate
+        if self.price_history:
+            last_known_price = self.price_history[-1]
+            print(f"⚠️  API failed, using last known price: ${last_known_price:,.2f}")
+            return last_known_price
+        else:
+            print(f"⚠️  No price history available, using fallback price: $3,000.00")
+            return 3000.0
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""
