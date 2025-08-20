@@ -51,11 +51,17 @@ class FixedMobileTradingBot:
         except Exception as e:
             print(f"Binance failed: {e}")
         
+        # Final fallback: try last_valid_price, then price_history, otherwise fallback value
         if hasattr(self, 'last_valid_price'):
             print(f"⚠️ Using last known price: ${self.last_valid_price:,.2f}")
             return self.last_valid_price
-        print("⚠️ No price data available. Skipping this cycle.")
-        return None
+        elif self.price_history:
+            last_known_price = self.price_history[-1]
+            print(f"⚠️ API failed, using last known price: ${last_known_price:,.2f}")
+            return last_known_price
+        else:
+            print("⚠️ No price data available. Using fallback price: $3,000.00")
+            return 3000.0
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""
