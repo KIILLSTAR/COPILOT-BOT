@@ -29,38 +29,47 @@ class FixedMobileTradingBot:
                 timeout=10
             )
             if response.status_code == 200:
-                return float(response.json()["ethereum"]["usd"])
+                price = float(response.json()["ethereum"]["usd"])
+                print(f"✅ CoinGecko price: ${price:,.2f}")
+                self.last_valid_price = price
+                return price
         except Exception as e:
             print(f"CoinGecko failed: {e}")
         
         try:
-            # Fallback to Jupiter
+            # Fallback to Binance
             response = requests.get(
-                "https://price.jup.ag/v4/price",
-                params={"ids": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"},
+                "https://api.binance.com/api/v3/ticker/price",
+                params={"symbol": "ETHUSDT"},
                 timeout=10
             )
             if response.status_code == 200:
-                data = response.json()
-                if "data" in data and "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" in data["data"]:
-                    return float(data["data"]["7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"]["price"])
+                price = float(response.json()["price"])
+                print(f"✅ Binance price: ${price:,.2f}")
+                self.last_valid_price = price
+                return price
         except Exception as e:
-            print(f"Jupiter failed: {e}")
+            print(f"Binance failed: {e}")
         
-        # Final fallback - use last known price if available, otherwise use reasonable estimate
-        if self.price_history:
+        # Final fallback: try last_valid_price, then price_history, otherwise fallback value
+        if hasattr(self, 'last_valid_price'):
+            print(f"⚠️ Using last known price: ${self.last_valid_price:,.2f}")
+            return self.last_valid_price
+        elif self.price_history:
             last_known_price = self.price_history[-1]
-            print(f"⚠️  API failed, using last known price: ${last_known_price:,.2f}")
+            print(f"⚠️ API failed, using last known price: ${last_known_price:,.2f}")
             return last_known_price
         else:
-            print(f"⚠️  No price history available, using fallback price: $3,000.00")
+            print("⚠️ No price data available. Using fallback price: $3,000.00")
             return 3000.0
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""
         try:
             current_price = self.get_eth_price_simple()
-            print(f"📊 Current ETH Price: ${current_price:,.2f}")
+            if current_price is None:
+                print("⚠️ Skipping signal detection due to missing price.")
+                return {'signal': None, 'reason': 'No price data'}
             
             # Add current price to history
             self.price_history.append(current_price)
@@ -85,16 +94,16 @@ class FixedMobileTradingBot:
                 
                 print(f"📊 Price change: {price_change:+.2%}")
                 
-                if price_change > 0.005:  # 0.5% increase
+                if price_change > 0.003:  # 0.3% increase (more sensitive)
                     signals.append({
                         'signal': 'long',
-                        'confidence': min(abs(price_change) * 15, 3.0),
+                        'confidence': min(abs(price_change) * 20, 3.0),
                         'reason': f'Price up {price_change:.2%}'
                     })
-                elif price_change < -0.005:  # 0.5% decrease
+                elif price_change < -0.003:  # 0.3% decrease (more sensitive)
                     signals.append({
                         'signal': 'short',
-                        'confidence': min(abs(price_change) * 15, 3.0),
+                        'confidence': min(abs(price_change) * 20, 3.0),
                         'reason': f'Price down {price_change:.2%}'
                     })
             
@@ -106,13 +115,13 @@ class FixedMobileTradingBot:
                 trend_change = (recent_avg - older_avg) / older_avg
                 print(f"📈 Trend change: {trend_change:+.2%}")
                 
-                if trend_change > 0.003:  # 0.3% uptrend
+                if trend_change > 0.002:  # 0.2% uptrend (more sensitive)
                     signals.append({
                         'signal': 'long',
                         'confidence': 1.8,
                         'reason': f'Uptrend detected ({trend_change:.2%})'
                     })
-                elif trend_change < -0.003:  # 0.3% downtrend
+                elif trend_change < -0.002:  # 0.2% downtrend (more sensitive)
                     signals.append({
                         'signal': 'short',
                         'confidence': 1.8,
@@ -122,7 +131,7 @@ class FixedMobileTradingBot:
             # 3. Volatility breakout
             if len(self.price_history) >= 3:
                 volatility = abs(current_price - self.price_history[-2]) / self.price_history[-2]
-                if volatility > 0.008:  # 0.8% volatility
+                if volatility > 0.005:  # 0.5% volatility (more sensitive)
                     direction = 'long' if current_price > self.price_history[-2] else 'short'
                     signals.append({
                         'signal': direction,
@@ -131,7 +140,7 @@ class FixedMobileTradingBot:
                     })
             
             # 4. RSI-like indicator
-            if len(self.price_history) >= 10:
+            if len(self.price_history) >= 8:
                 gains = []
                 losses = []
                 for i in range(1, len(self.price_history)):
@@ -143,29 +152,29 @@ class FixedMobileTradingBot:
                         gains.append(0)
                         losses.append(abs(change))
                 
-                avg_gain = sum(gains[-10:]) / 10 if gains else 0
-                avg_loss = sum(losses[-10:]) / 10 if losses else 0
+                avg_gain = sum(gains[-8:]) / 8 if gains else 0
+                avg_loss = sum(losses[-8:]) / 8 if losses else 0
                 
                 rsi = 100 - (100 / (1 + (avg_gain / avg_loss))) if avg_loss > 0 else 50
                 print(f"📊 RSI: {rsi:.1f}")
                 
-                if rsi < 30:
+                if rsi < 35:  # More sensitive
                     signals.append({
                         'signal': 'long',
                         'confidence': 2.2,
                         'reason': f'RSI oversold ({rsi:.1f})'
                     })
-                elif rsi > 70:
+                elif rsi > 65:  # More sensitive
                     signals.append({
                         'signal': 'short',
                         'confidence': 2.2,
                         'reason': f'RSI overbought ({rsi:.1f})'
                     })
             
-            # 5. Random signals for testing (after 5 cycles)
-            if self.cycle_count >= 5 and self.cycle_count % 4 == 0:
+            # 5. Random signals for testing (after 3 cycles)
+            if self.cycle_count >= 3 and self.cycle_count % 3 == 0:
                 import random
-                if random.random() < 0.3:  # 30% chance
+                if random.random() < 0.4:  # 40% chance (more frequent)
                     direction = random.choice(['long', 'short'])
                     signals.append({
                         'signal': direction,
@@ -216,23 +225,18 @@ class FixedMobileTradingBot:
         """Update open positions"""
         if not self.positions:
             return
-            
         current_price = self.get_eth_price_simple()
-        
         for position in self.positions:
             if position['status'] != 'open':
                 continue
-                
             # Calculate PnL
             if position['side'] == 'long':
                 pnl_pct = (current_price - position['entry_price']) / position['entry_price']
             else:
                 pnl_pct = (position['entry_price'] - current_price) / position['entry_price']
-            
             pnl_usd = position['size'] * pnl_pct
-            
-            # Take profit/stop loss
-            if pnl_pct >= 0.015:  # 1.5% profit
+            # Lowered thresholds for more frequent closes
+            if pnl_pct >= 0.005:  # 0.5% profit
                 position['status'] = 'closed'
                 position['exit_price'] = current_price
                 position['exit_time'] = datetime.now().isoformat()
@@ -240,8 +244,7 @@ class FixedMobileTradingBot:
                 self.balance += position['size'] + pnl_usd
                 self.trade_history.append(position)
                 print(f"🎯 Take profit hit: +${pnl_usd:.2f}")
-                
-            elif pnl_pct <= -0.008:  # 0.8% loss
+            elif pnl_pct <= -0.003:  # 0.3% loss
                 position['status'] = 'closed'
                 position['exit_price'] = current_price
                 position['exit_time'] = datetime.now().isoformat()
