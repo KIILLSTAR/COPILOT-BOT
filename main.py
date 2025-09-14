@@ -1,9 +1,9 @@
 # main.py - Jupiter ETH Perps Trading Bot with Dry Run Simulation
 
-from strategy.signal_detector import run_signal_loop
-from core.pnl_moniter import run_pnl_monitor
-from config import trade_config as cfg
-from logger.audit_logger import _write_log
+from ai_signal_detector import run_ai_signal_loop
+from app_core_trading import run_pnl_monitor
+from app_config import trade_config as cfg
+from app_logger import _write_log
 import time
 import threading
 
@@ -13,7 +13,7 @@ def main():
     
     # Initialize simulation engine
     from core.simulation_engine import simulator
-    from dashboard.trading_dashboard import start_dashboard
+    from app_dashboard import start_trading_dashboard
     
     _write_log("BOOT", "Bot initialized")
     
@@ -29,7 +29,7 @@ def main():
     dashboard_thread = None
     if dashboard_choice.lower() == 'y':
         print("🚀 Starting dashboard in background...")
-        dashboard_thread = start_dashboard(interactive=False)
+        dashboard_thread = start_trading_dashboard(interactive=False)
         time.sleep(2)  # Give dashboard time to start
     
     print(f"\n✅ Bot started successfully!")
@@ -66,7 +66,7 @@ def main():
             
             # 🔍 Detect and process signal
             print("\n🔍 Running signal detection...")
-            signal_result = run_signal_loop(cfg)
+            signal_result = run_ai_signal_loop(cfg)
             
             # 📊 Monitor PnL after trade
             print("\n📊 Monitoring positions...")
