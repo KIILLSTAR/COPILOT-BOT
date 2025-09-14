@@ -1,8 +1,8 @@
 # main.py - Jupiter ETH Perps Trading Bot with Dry Run Simulation
 
-from strategy.signal_detector import run_signal_loop
+from ai_signal_detector import run_ai_signal_loop
 from app_core_trading import run_pnl_monitor
-from app_config import cfg
+from app_config import trade_config as cfg
 from app_logger import _write_log
 import time
 import threading
@@ -66,7 +66,7 @@ def main():
             
             # 🔍 Detect and process signal
             print("\n🔍 Running signal detection...")
-            signal_result = run_signal_loop(cfg)
+            signal_result = run_ai_signal_loop(cfg)
             
             # 📊 Monitor PnL after trade
             print("\n📊 Monitoring positions...")
