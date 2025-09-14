@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """
-Unified Trading Bot - Updated Version
+Unified Trading Bot - All Platforms
 Automatically detects platform and adapts for optimal performance
-Beginner-friendly with clear explanations and enhanced features
+Beginner-friendly with clear explanations
 """
 import os
 import sys
 import time
 import platform
 import threading
-import json
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -25,8 +24,7 @@ class PlatformDetector:
             'has_internet': True,
             'has_display': True,
             'is_limited': False,
-            'recommended_mode': 'standard',
-            'version': '2.0.0'
+            'recommended_mode': 'standard'
         }
         
         # Detect mobile platforms
@@ -61,7 +59,7 @@ class PlatformDetector:
 class UnifiedTradingBot:
     """
     Unified trading bot that adapts to any platform
-    Enhanced with better error handling and performance tracking
+    Combines all the best features from different variants
     """
     
     def __init__(self, platform_info: Dict[str, Any]):
@@ -72,12 +70,6 @@ class UnifiedTradingBot:
         self.positions = []
         self.trade_history = []
         self.price_history = []
-        
-        # Enhanced tracking
-        self.start_time = datetime.now()
-        self.total_pnl = 0.0
-        self.win_count = 0
-        self.loss_count = 0
         
         # Initialize based on platform
         self._initialize_for_platform()
@@ -248,8 +240,8 @@ class UnifiedTradingBot:
                 
                 portfolio_data = {
                     'current_balance': self.balance,
-                    'total_pnl': self.total_pnl,
-                    'win_rate': self.win_count / (self.win_count + self.loss_count) if (self.win_count + self.loss_count) > 0 else 0.5,
+                    'total_pnl': sum(pos.get('pnl', 0) for pos in self.positions),
+                    'win_rate': 0.6,  # Placeholder
                     'positions': self.positions,
                     'total_trades': len(self.trade_history)
                 }
@@ -335,14 +327,7 @@ class UnifiedTradingBot:
         
         # Update balance and history
         self.balance += pnl
-        self.total_pnl += pnl
         self.trade_history.append(trade)
-        
-        # Update win/loss count
-        if pnl > 0:
-            self.win_count += 1
-        else:
-            self.loss_count += 1
         
         # Learn from outcome if AI is enabled
         if self.ai_enabled:
@@ -355,29 +340,9 @@ class UnifiedTradingBot:
         print(f"✅ Trade executed: {signal['action'].upper()} | PnL: ${pnl:.2f} | Balance: ${self.balance:.2f}")
         return True
     
-    def get_performance_stats(self) -> Dict[str, Any]:
-        """Get comprehensive performance statistics"""
-        runtime = (datetime.now() - self.start_time).total_seconds() / 3600  # hours
-        
-        total_trades = len(self.trade_history)
-        win_rate = (self.win_count / total_trades * 100) if total_trades > 0 else 0
-        
-        return {
-            'runtime_hours': runtime,
-            'total_trades': total_trades,
-            'win_count': self.win_count,
-            'loss_count': self.loss_count,
-            'win_rate': win_rate,
-            'total_pnl': self.total_pnl,
-            'current_balance': self.balance,
-            'ai_enabled': self.ai_enabled,
-            'platform_mode': self.platform_info['recommended_mode']
-        }
-    
     def display_status(self):
-        """Display current bot status with enhanced information"""
+        """Display current bot status"""
         indicators = self.calculate_simple_indicators()
-        stats = self.get_performance_stats()
         
         print(f"\n📊 Bot Status - Cycle {self.cycle_count}")
         print(f"💰 Balance: ${self.balance:,.2f}")
@@ -385,28 +350,12 @@ class UnifiedTradingBot:
         print(f"📊 RSI: {indicators['rsi']:.1f}")
         print(f"📈 Trend: {indicators['trend']:.3f}")
         print(f"📊 Volatility: {indicators['volatility']:.3f}")
-        print(f"🎯 Trades: {stats['total_trades']} (Wins: {stats['win_count']}, Losses: {stats['loss_count']})")
-        print(f"📈 Win Rate: {stats['win_rate']:.1f}%")
-        print(f"💰 Total PnL: ${stats['total_pnl']:,.2f}")
-        print(f"⏱️ Runtime: {stats['runtime_hours']:.1f} hours")
+        print(f"🎯 Trades: {len(self.trade_history)}")
         print(f"🧠 AI: {'Enabled' if self.ai_enabled else 'Disabled'}")
         print(f"🌐 Mode: {self.platform_info['recommended_mode'].title()}")
     
-    def save_performance_data(self):
-        """Save performance data to file"""
-        try:
-            stats = self.get_performance_stats()
-            stats['last_update'] = datetime.now().isoformat()
-            stats['trade_history'] = self.trade_history
-            
-            with open('bot_performance.json', 'w') as f:
-                json.dump(stats, f, indent=2)
-            print("💾 Performance data saved")
-        except Exception as e:
-            print(f"❌ Failed to save performance data: {e}")
-    
     def trading_loop(self):
-        """Main trading loop with enhanced features"""
+        """Main trading loop"""
         print("🔄 Starting trading loop...")
         
         while self.running:
@@ -419,10 +368,6 @@ class UnifiedTradingBot:
                 # Display status every 10 cycles
                 if self.cycle_count % 10 == 0:
                     self.display_status()
-                
-                # Save performance data every 50 cycles
-                if self.cycle_count % 50 == 0:
-                    self.save_performance_data()
                 
                 # Generate signal
                 signal = self.generate_signal()
@@ -440,19 +385,15 @@ class UnifiedTradingBot:
             except Exception as e:
                 print(f"❌ Error in trading loop: {e}")
                 time.sleep(10)  # Wait before retrying
-        
-        # Save final performance data
-        self.save_performance_data()
     
     def start(self):
-        """Start the trading bot with enhanced startup"""
-        print("🚀 Starting Unified Trading Bot v2.0")
+        """Start the trading bot"""
+        print("🚀 Starting Unified Trading Bot")
         print(f"🖥️ Platform: {self.platform_info['os']}")
         print(f"📱 Mobile: {'Yes' if self.platform_info['is_mobile'] else 'No'}")
         print(f"🌐 Internet: {'Yes' if self.platform_info['has_internet'] else 'No'}")
         print(f"🎯 Mode: {self.platform_info['recommended_mode'].title()}")
         print(f"🧠 AI Learning: {'Enabled' if self.ai_enabled else 'Disabled'}")
-        print(f"📊 Version: {self.platform_info['version']}")
         print("\n" + "="*50)
         
         self.running = True
@@ -464,11 +405,10 @@ class UnifiedTradingBot:
         finally:
             self.running = False
             print("✅ Bot shutdown complete")
-            self.display_status()
 
 def main():
     """Main entry point - automatically detects platform and starts appropriate bot"""
-    print("🤖 Unified Trading Bot v2.0 - All Platforms")
+    print("🤖 Unified Trading Bot - All Platforms")
     print("=" * 50)
     
     # Detect platform
