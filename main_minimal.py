@@ -6,10 +6,10 @@ Clean, simple trading bot with minimalistic dashboard
 import time
 import threading
 from strategy.signal_detector import run_signal_loop
-from core.pnl_moniter import run_pnl_monitor
-from config import trade_config as cfg
-from logger.audit_logger import _write_log
-from dashboard.minimal_dashboard import start_minimal_dashboard, dashboard
+from app_core_trading import run_pnl_monitor
+from app_config import cfg
+from app_logger import _write_log
+from app_dashboard import start_minimal_dashboard, minimal_dashboard as dashboard
 
 class MinimalTradingBot:
     """

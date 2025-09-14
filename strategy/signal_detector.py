@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List, Tuple
 from core.drift_client import DriftClient, ETHPerpStrategy
 from core.indicators import calculate_rsi, calculate_ema, calculate_bollinger_bands
-from logger.audit_logger import log_signal
+from logger import log_signal
 
 class MultiSourceETHPerpAnalyzer:
     """
