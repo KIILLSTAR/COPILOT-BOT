@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 import requests
+from core.price_fetcher import price_fetcher
 
 @dataclass
 class SimulatedPosition:
@@ -63,35 +64,9 @@ class TradingSimulator:
         self.load_simulation_state()
     
     def get_real_time_price(self, symbol: str = "ETH") -> float:
-        """Get real-time price from multiple sources"""
-        try:
-            # Try CoinGecko first
-            response = requests.get(
-                "https://api.coingecko.com/api/v3/simple/price",
-                params={"ids": "ethereum", "vs_currencies": "usd"},
-                timeout=5
-            )
-            if response.status_code == 200:
-                return float(response.json()["ethereum"]["usd"])
-        except:
-            pass
-        
-        try:
-            # Fallback to Jupiter price feed
-            response = requests.get(
-                "https://price.jup.ag/v4/price",
-                params={"ids": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"},  # ETH mint
-                timeout=5
-            )
-            if response.status_code == 200:
-                data = response.json()
-                if "data" in data and "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" in data["data"]:
-                    return float(data["data"]["7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"]["price"])
-        except:
-            pass
-        
-        # Fallback price if APIs fail
-        return 3000.0
+        """Get robust real-time price using central PriceFetcher."""
+        # Symbol currently unused; ETH is the only supported asset for now
+        return price_fetcher.get_eth_price()
     
     def calculate_position_size(self, trade_size_usd: float, leverage: float, price: float) -> float:
         """Calculate position size based on trade parameters"""
