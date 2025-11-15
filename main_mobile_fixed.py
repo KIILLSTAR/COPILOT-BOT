@@ -4,6 +4,7 @@ import time
 import threading
 from datetime import datetime
 import requests
+from core.price_fetcher import price_fetcher
 import json
 
 class FixedMobileTradingBot:
@@ -20,48 +21,8 @@ class FixedMobileTradingBot:
         self.price_history = []  # Initialize price history properly
         
     def get_eth_price_simple(self):
-        """Get ETH price with fallback options for mobile"""
-        try:
-            # Try CoinGecko first (most reliable)
-            response = requests.get(
-                "https://api.coingecko.com/api/v3/simple/price",
-                params={"ids": "ethereum", "vs_currencies": "usd"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                price = float(response.json()["ethereum"]["usd"])
-                print(f"✅ CoinGecko price: ${price:,.2f}")
-                self.last_valid_price = price
-                return price
-        except Exception as e:
-            print(f"CoinGecko failed: {e}")
-        
-        try:
-            # Fallback to Binance
-            response = requests.get(
-                "https://api.binance.com/api/v3/ticker/price",
-                params={"symbol": "ETHUSDT"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                price = float(response.json()["price"])
-                print(f"✅ Binance price: ${price:,.2f}")
-                self.last_valid_price = price
-                return price
-        except Exception as e:
-            print(f"Binance failed: {e}")
-        
-        # Final fallback: try last_valid_price, then price_history, otherwise fallback value
-        if hasattr(self, 'last_valid_price'):
-            print(f"⚠️ Using last known price: ${self.last_valid_price:,.2f}")
-            return self.last_valid_price
-        elif self.price_history:
-            last_known_price = self.price_history[-1]
-            print(f"⚠️ API failed, using last known price: ${last_known_price:,.2f}")
-            return last_known_price
-        else:
-            print("⚠️ No price data available. Using fallback price: $3,000.00")
-            return 3000.0
+        """Get ETH price using resilient multi-source fetcher."""
+        return price_fetcher.get_eth_price()
     
     def enhanced_signal_detection(self):
         """Enhanced signal detection with multiple strategies"""

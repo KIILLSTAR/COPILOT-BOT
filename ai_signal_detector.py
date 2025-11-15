@@ -15,6 +15,7 @@ except ImportError:
     PANDAS_AVAILABLE = False
     print("⚠️ Pandas not available. Using basic implementations.")
 from core.drift_client import DriftClient, ETHPerpStrategy
+from core.price_fetcher import price_fetcher
 from core.indicators import calculate_rsi, calculate_ema, calculate_bollinger_bands
 from app_logger import log_signal
 from ai_learning import get_ai_signal, learn_from_trade, TradingSignal, ai_engine
@@ -57,8 +58,8 @@ class AISignalDetector:
         market_data = {}
         
         try:
-            # Get current ETH price and basic data
-            current_price = self.drift_client.get_current_price()
+            # Get current ETH price and basic data (robust, multi-source)
+            current_price = price_fetcher.get_eth_price()
             market_data['price'] = current_price
             
             # Get technical indicators
