@@ -4,6 +4,7 @@ import time
 import threading
 from datetime import datetime
 import requests
+from core.price_fetcher import price_fetcher
 import json
 
 class SensitiveMobileTradingBot:
@@ -19,35 +20,8 @@ class SensitiveMobileTradingBot:
         self.trade_history = []
         
     def get_eth_price_simple(self):
-        """Get ETH price with fallback options for mobile"""
-        try:
-            # Try CoinGecko first (most reliable)
-            response = requests.get(
-                "https://api.coingecko.com/api/v3/simple/price",
-                params={"ids": "ethereum", "vs_currencies": "usd"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                return float(response.json()["ethereum"]["usd"])
-        except Exception as e:
-            print(f"CoinGecko failed: {e}")
-        
-        try:
-            # Fallback to Jupiter
-            response = requests.get(
-                "https://price.jup.ag/v4/price",
-                params={"ids": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                data = response.json()
-                if "data" in data and "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs" in data["data"]:
-                    return float(data["data"]["7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"]["price"])
-        except Exception as e:
-            print(f"Jupiter failed: {e}")
-        
-        # Final fallback
-        return 3000.0
+        """Get ETH price using resilient multi-source fetcher."""
+        return price_fetcher.get_eth_price()
     
     def sensitive_signal_detection(self):
         """More sensitive signal detection"""

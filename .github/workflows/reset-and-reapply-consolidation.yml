@@ -1,0 +1,100 @@
+# Add this file in the GitHub UI at: Repo → Add file → Create new file → .github/workflows/reset-and-reapply-consolidation.yml
+# Then commit directly to main (or to a small branch and open a PR). After it's in the repo, trigger it via the Actions tab.
+
+name: Reset main to pre-merge and reapply consolidation into integrate
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre_merge_sha:
+        description: 'Commit SHA of main before the accidental merge (parent1).'
+        required: true
+        default: '71efcc41a92eb90d2abb5379577a7811083259d6'
+      consolidation_branch:
+        description: 'Branch to merge into integrate'
+        required: true
+        default: 'cursor/consolidate-and-restructure-repository-files-3771'
+      integrate_branch:
+        description: 'Integration branch name to recreate'
+        required: true
+        default: 'integrate/cursor-consolidate'
+      run_reset:
+        description: 'If true, perform the force reset on main. If false, just create backup+integrate.'
+        required: true
+        default: 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  reset-and-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (fetch all)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Print inputs
+        run: |
+          echo "pre_merge_sha=${{ github.event.inputs.pre_merge_sha }}"
+          echo "consolidation_branch=${{ github.event.inputs.consolidation_branch }}"
+          echo "integrate_branch=${{ github.event.inputs.integrate_branch }}"
+          echo "run_reset=${{ github.event.inputs.run_reset }}"
+
+      - name: Ensure origin is present
+        run: |
+          git remote set-url origin "$(git config --get remote.origin.url)"
+          git fetch origin --prune
+
+      - name: Create backup branch and tag of current main
+        run: |
+          git checkout main
+          git pull origin main
+          git branch -f backup/main-post-merge
+          git push -u origin backup/main-post-merge
+          TAG="pre-merge-backup-$(date +'%Y%m%d-%H%M%S')"
+          git tag -f "$TAG"
+          git push --tags origin
+
+      - name: Optionally reset main to pre-merge SHA (force push)
+        if: ${{ github.event.inputs.run_reset == 'true' }}
+        run: |
+          PRE=${{ github.event.inputs.pre_merge_sha }}
+          echo "Resetting main to $PRE (force push)"
+          git checkout main
+          git reset --hard "$PRE"
+          git push --force-with-lease origin main
+
+      - name: Recreate integrate branch at pre-merge
+        run: |
+          PRE=${{ github.event.inputs.pre_merge_sha }}
+          INTEG=${{ github.event.inputs.integrate_branch }}
+          git checkout -B "$INTEG" "$PRE"
+          git push -u origin "$INTEG"
+
+      - name: Fetch consolidation branch and merge into integrate
+        run: |
+          CONS=${{ github.event.inputs.consolidation_branch }}
+          INTEG=${{ github.event.inputs.integrate_branch }}
+          git fetch origin "$CONS":"refs/remotes/origin/$CONS" || true
+          git checkout "$INTEG"
+          set -o pipefail
+          if git merge --no-ff --no-edit "origin/$CONS"; then
+            echo "Merge into $INTEG succeeded without conflicts."
+            git push origin "$INTEG"
+          else
+            echo "::error::Merge produced conflicts. Please resolve them in branch $INTEG."
+            echo "Conflicted files:"
+            git ls-files -u | awk '{print $4}' | sort -u
+            # abort to leave the branch clean on the runner
+            git merge --abort || true
+            exit 1
+          fi
+
+      - name: Final status
+        run: |
+          echo "Backup branch: backup/main-post-merge"
+          echo "Integrate branch: ${{ github.event.inputs.integrate_branch }}"
+          echo "If the job failed in the merge step, open the branch and resolve conflicts locally or paste conflict hunks here for help."

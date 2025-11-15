@@ -5,7 +5,7 @@ Shows the clean, simple dashboard in action
 """
 import time
 from core.simulation_engine import simulator
-from dashboard.minimal_dashboard import dashboard
+from dashboard import minimal_dashboard as dashboard
 
 def create_sample_data():
     """Create some sample trading data for demonstration"""
