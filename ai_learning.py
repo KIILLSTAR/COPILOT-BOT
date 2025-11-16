@@ -18,7 +18,7 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     NUMPY_AVAILABLE = False
-    print("⚠️ NumPy not available. Using basic implementations.")
+    print("WARNING: NumPy not available. Using basic implementations.")
 
 # Try to import pandas, fall back to basic implementations
 try:
@@ -26,7 +26,7 @@ try:
     PANDAS_AVAILABLE = True
 except ImportError:
     PANDAS_AVAILABLE = False
-    print("⚠️ Pandas not available. Using basic implementations.")
+    print("WARNING: Pandas not available. Using basic implementations.")
 
 # Try to import ML libraries, fall back to basic implementations if not available
 try:
@@ -37,7 +37,7 @@ try:
     ML_AVAILABLE = True
 except ImportError:
     ML_AVAILABLE = False
-    print("⚠️ Scikit-learn not available. Using basic ML implementations.")
+    print("WARNING: Scikit-learn not available. Using basic ML implementations.")
 
 # Basic implementations for when numpy is not available
 if not NUMPY_AVAILABLE:
@@ -339,11 +339,11 @@ class AILearningEngine:
                 with open(f"{self.model_path}/performance.json", 'r') as f:
                     self.model_performance = json.load(f)
             
-            print("✅ AI models loaded successfully")
+            print("OK - AI models loaded successfully")
             
         except Exception as e:
-            print(f"⚠️ Could not load existing models: {e}")
-            print("🔄 Starting with fresh models")
+            print(f"WARNING: Could not load existing models: {e}")
+            print("Starting with fresh models")
     
     def _save_models(self):
         """Save trained models"""
@@ -361,10 +361,10 @@ class AILearningEngine:
             with open(f"{self.model_path}/performance.json", 'w') as f:
                 json.dump(self.model_performance, f, indent=2)
             
-            print("✅ AI models saved successfully")
+            print("OK - AI models saved successfully")
             
         except Exception as e:
-            print(f"❌ Error saving models: {e}")
+            print(f"ERROR: Error saving models: {e}")
     
     def prepare_training_data(self, simulation_data: Dict[str, Any]) -> Tuple[List[Dict], List[float], List[float]]:
         """Prepare training data from simulation history"""
@@ -426,10 +426,10 @@ class AILearningEngine:
         X, y_signals, y_confidences = self.prepare_training_data(simulation_data)
         
         if len(X) < 10:
-            print("⚠️ Insufficient training data. Need at least 10 trades.")
+            print("WARNING: Insufficient training data. Need at least 10 trades.")
             return
         
-        print(f"📊 Training on {len(X)} historical trades")
+        print(f"Training on {len(X)} historical trades")
         
         try:
             # Convert to numpy arrays for scikit-learn
@@ -472,12 +472,12 @@ class AILearningEngine:
                 accuracy = sum(1 for p, t in zip(predictions, y_signals) if (p > 0.5) == t) / len(y_signals)
             
             self.model_performance['accuracy'] = accuracy
-            print(f"✅ Model training complete. Accuracy: {accuracy:.2%}")
+            print(f"OK - Model training complete. Accuracy: {accuracy:.2%}")
             
             self._save_models()
             
         except Exception as e:
-            print(f"❌ Error training models: {e}")
+            print(f"ERROR: Error training models: {e}")
     
     def predict_signal(self, market_data: Dict[str, Any], 
                       trade_history: List[Dict], 
@@ -548,7 +548,7 @@ class AILearningEngine:
             )
             
         except Exception as e:
-            print(f"❌ Error generating signal: {e}")
+            print(f"ERROR: Error generating signal: {e}")
             return TradingSignal(
                 action='hold',
                 confidence=0.5,
@@ -625,9 +625,9 @@ def initialize_ai_learning(simulation_data_path: str = "simulation_data.json"):
             ai_engine.train_models(simulation_data)
             print("✅ AI learning initialized successfully")
         else:
-            print("⚠️ No simulation data found. AI will start learning from new trades.")
+            print("WARNING: No simulation data found. AI will start learning from new trades.")
     except Exception as e:
-        print(f"❌ Error initializing AI learning: {e}")
+        print(f"ERROR: Error initializing AI learning: {e}")
 
 def get_ai_signal(market_data: Dict[str, Any], 
                  trade_history: List[Dict], 

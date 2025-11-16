@@ -1,0 +1,19 @@
+{
+  "autonomous_bot_enabled": false,
+  "bot_auto_trade": false,
+  "ai_assistant_enabled": true,
+  "ai_auto_refresh": false,
+  "ai_refresh_interval": 60,
+  "primary_data_source": "jupiter",
+  "use_jupiter_perps": true,
+  "use_bot_data": false,
+  "ollama_url": null,
+  "ollama_model": "llama3.2",
+  "show_detailed_analysis": true,
+  "alert_on_high_confidence": true,
+  "high_confidence_threshold": 8,
+  "comet_enabled": false,
+  "comet_api_key": null,
+  "integrate_with_bot": false,
+  "standalone_mode": true
+}
