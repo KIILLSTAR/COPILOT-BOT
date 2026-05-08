@@ -1,58 +1,73 @@
-# 🤖 COPILOT BOT — Jupiter ETH Perpetuals Trading Bot
+# COPILOT-BOT 🤖
 
-A clean, consolidated autonomous trading bot for Jupiter Perpetuals on Solana.
-Built for dry-run simulation first, live trading when you're ready.
+Autonomous ETH-PERP trading bot running on Jupiter Perpetuals (Solana).
+Currently in **dry run mode** — all trades are simulated, no real money moves.
 
-## 🚀 Quick Start
-
-```bash
-pip install -r requirements.txt
-python main.py         # bot + dashboard (recommended)
-python main.py --web   # dashboard only
-python main.py --bot   # bot engine only
-```
-
-Dashboard runs at: `http://localhost:5000`
-
-## 🏗️ Project Structure
+## Architecture
 
 ```
 copilot-bot/
-├── main.py                    ← Single entry point
-├── requirements.txt
-├── .env.example
+├── main.py                   # Single entry point
 ├── config/
-│   ├── trade_config.py        ← All trading parameters
-│   └── safety_config.py       ← Safety locks (read before touching)
+│   ├── trade_config.py       # All tunable parameters
+│   └── safety_config.py      # Safety locks & dry run enforcement
 ├── core/
-│   ├── jupiter_perps.py       ← Jupiter Perps API client
-│   ├── price_fetcher.py       ← Multi-source price feed
-│   ├── simulation_engine.py   ← Dry run engine
-│   └── bot_engine.py          ← Main trading loop
+│   ├── bot_engine.py         # Main loop orchestrator
+│   ├── jupiter_perps.py      # Jupiter Perpetuals API client
+│   ├── price_fetcher.py      # Price feed (Jupiter → Binance → CoinGecko)
+│   ├── simulation_engine.py  # Dry run position manager
+│   └── indicators.py         # RSI, EMA, Bollinger Band calculations
 ├── strategy/
-│   └── signal_detector.py     ← RSI + EMA + BB + funding + OI signals
+│   └── signal_detector.py    # Signal generation (RSI + EMA + BB + funding + OI)
 ├── dashboard/
-│   └── app.py                 ← Flask web dashboard
-└── data/                      ← Auto-created: logs, state, price cache
+│   ├── app.py                # Flask web dashboard (mobile-optimized)
+│   └── templates/            # HTML templates
+└── wallet/
+    ├── secure_wallet.py      # Wallet management (live trading only)
+    └── trade_executer.py     # Trade execution (live trading only)
 ```
 
-## 🔒 Safety
+## How to Run
 
-Dry run is **hardcoded ON** by default. Four locks must all be disabled to enable live trading. You will not accidentally trade real money.
+```bash
+pip install -r requirements.txt
 
-## 📊 Signals Used
+python main.py          # bot + dashboard (default)
+python main.py --web    # dashboard only
+python main.py --bot    # bot only
+```
 
-- RSI (14) — oversold/overbought
-- EMA 9/21 crossover — trend direction
-- Bollinger Bands — price extremes
-- Jupiter funding rate — market bias
-- Open interest ratio — long/short imbalance
+Dashboard runs at `http://localhost:5000`
 
-## 🌐 Dashboard Features
+## Strategy
 
-- Real-time ETH price from Jupiter Perps API
-- Signal direction + confidence score
-- Open positions with unrealized PnL
-- Trade history with realized PnL
-- All market indicators in one view
-- Mobile-optimized dark theme
+Signals are generated from 5 indicators:
+- **RSI(14)** — oversold/overbought detection
+- **EMA 9/21 crossover** — trend direction
+- **Bollinger Bands(20)** — price extremes
+- **Funding rate** — Jupiter perp market sentiment
+- **OI ratio** — long/short open interest imbalance
+
+A signal fires when combined confidence score ≥ 0.65.
+
+## Configuration
+
+All parameters in `config/trade_config.py`:
+- `TRADING_PAIR` — default: ETH-PERP
+- `TRADE_SIZE_USD` — default: $100
+- `LEVERAGE` — default: 2x
+- `STOP_LOSS_PCT` — default: 2%
+- `TAKE_PROFIT_PCT` — default: 4%
+- `SIGNAL_THRESHOLD` — default: 0.65
+
+## Safety
+
+- `DRY_RUN = True` is **hardcoded** — cannot accidentally trade real money
+- Live trading requires explicit env var unlock (`ENABLE_LIVE_TRADING=TRUE`)
+- Max daily trades: 10
+- Auto-close if total loss exceeds $50
+
+## Status
+
+🟢 Bot logic running autonomously on Base44 cloud (every 15 min)
+🟡 Live trading: NOT enabled
