@@ -1,328 +1,221 @@
 """
-Trading Simulation Engine
-Handles dry run mode with real-time data and realistic trade execution simulation
-SAFETY: This engine ONLY simulates trades - never executes real trades
+Dry Run Simulation Engine
+Mimics live Jupiter perp trading with real market data.
+No real money ever moves. Safety is hardcoded.
 """
-import json
-import time
+from __future__ import annotations
+import json, os, uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-import requests
+from dataclasses import dataclass, asdict, field
 from core.price_fetcher import price_fetcher
 
 @dataclass
-class SimulatedPosition:
+class SimPosition:
     id: str
     symbol: str
-    side: str  # "long" or "short"
+    side: str           # "long" or "short"
     entry_price: float
-    size: float
+    size_usd: float
     leverage: float
     entry_time: str
-    current_price: float
-    unrealized_pnl: float
+    current_price: float = 0.0
+    unrealized_pnl: float = 0.0
     realized_pnl: float = 0.0
-    status: str = "open"  # "open", "closed"
+    status: str = "open"
     exit_price: Optional[float] = None
     exit_time: Optional[str] = None
     stop_loss: Optional[float] = None
     take_profit: Optional[float] = None
     fees_paid: float = 0.0
-    funding_paid: float = 0.0
 
 @dataclass
-class SimulationMetrics:
+class SimMetrics:
     total_trades: int = 0
     winning_trades: int = 0
     losing_trades: int = 0
     total_pnl: float = 0.0
     total_fees: float = 0.0
-    total_funding: float = 0.0
     win_rate: float = 0.0
     avg_win: float = 0.0
     avg_loss: float = 0.0
     largest_win: float = 0.0
     largest_loss: float = 0.0
-    sharpe_ratio: float = 0.0
     max_drawdown: float = 0.0
-    starting_balance: float = 10000.0
-    current_balance: float = 10000.0
+    starting_balance: float = 10_000.0
+    current_balance: float = 10_000.0
 
 class TradingSimulator:
-    """
-    Realistic trading simulation with real market data
-    """
-    
-    def __init__(self, starting_balance: float = 10000.0):
+    STATE_FILE = "data/simulation_state.json"
+
+    def __init__(self, starting_balance: float = 10_000.0):
         self.starting_balance = starting_balance
         self.current_balance = starting_balance
-        self.positions: Dict[str, SimulatedPosition] = {}
-        self.trade_history: List[SimulatedPosition] = []
-        self.metrics = SimulationMetrics(starting_balance=starting_balance, current_balance=starting_balance)
-        self.simulation_file = "simulation_data.json"
-        self.load_simulation_state()
-    
-    def get_real_time_price(self, symbol: str = "ETH") -> float:
-        """Get robust real-time price using central PriceFetcher."""
-        # Symbol currently unused; ETH is the only supported asset for now
-        return price_fetcher.get_eth_price()
-    
-    def calculate_position_size(self, trade_size_usd: float, leverage: float, price: float) -> float:
-        """Calculate position size based on trade parameters"""
-        notional_size = trade_size_usd * leverage
-        return notional_size / price
-    
-    def calculate_fees(self, notional_value: float) -> float:
-        """Calculate trading fees (0.1% typical for perps)"""
-        return notional_value * 0.001
-    
-    def calculate_funding_rate(self) -> float:
-        """Simulate funding rate (simplified)"""
-        import random
-        # Simulate funding rate between -0.1% to 0.1% per 8 hours
-        return random.uniform(-0.001, 0.001)
-    
-    def open_position(self, symbol: str, side: str, trade_size_usd: float, 
-                     leverage: float = 1.0, stop_loss_pct: float = 0.02, 
-                     take_profit_pct: float = 0.04) -> Optional[str]:
-        """
-        Open a simulated position with real market data
-        SAFETY: This is SIMULATION ONLY - no real money is used
-        """
-        # CRITICAL SAFETY CHECK
-        from config.safety_config import safety
-        if not safety.is_dry_run_forced():
-            print("🛑 SAFETY VIOLATION: Attempted real trade blocked!")
-            print("🔒 Simulation engine only handles fake trades")
-            return None
-        current_price = self.get_real_time_price(symbol)
-        position_size = self.calculate_position_size(trade_size_usd, leverage, current_price)
-        notional_value = position_size * current_price
-        fees = self.calculate_fees(notional_value)
-        
-        # Check if we have enough balance
-        if fees > self.current_balance:
-            print(f"❌ Insufficient balance for fees: ${fees:.2f}")
-            return None
-        
-        # Create position
-        position_id = f"{symbol}_{side}_{int(time.time())}"
-        
-        # Calculate stop loss and take profit
-        if side == "long":
-            stop_loss = current_price * (1 - stop_loss_pct)
-            take_profit = current_price * (1 + take_profit_pct)
-        else:  # short
-            stop_loss = current_price * (1 + stop_loss_pct)
-            take_profit = current_price * (1 - take_profit_pct)
-        
-        position = SimulatedPosition(
-            id=position_id,
+        self.positions: Dict[str, SimPosition] = {}
+        self.trade_history: List[SimPosition] = []
+        self.metrics = SimMetrics(
+            starting_balance=starting_balance,
+            current_balance=starting_balance
+        )
+        os.makedirs("data", exist_ok=True)
+        self._load_state()
+
+    # ── State persistence ──────────────────────────────────────────────────
+
+    def _load_state(self):
+        if not os.path.exists(self.STATE_FILE):
+            return
+        try:
+            with open(self.STATE_FILE) as f:
+                d = json.load(f)
+            self.current_balance = d.get("balance", self.starting_balance)
+            self.metrics = SimMetrics(**d.get("metrics", asdict(self.metrics)))
+            for pid, pos_dict in d.get("positions", {}).items():
+                self.positions[pid] = SimPosition(**pos_dict)
+            for pos_dict in d.get("history", []):
+                self.trade_history.append(SimPosition(**pos_dict))
+        except Exception as e:
+            print(f"[Sim] Could not load state: {e}")
+
+    def _save_state(self):
+        try:
+            with open(self.STATE_FILE, "w") as f:
+                json.dump({
+                    "balance": self.current_balance,
+                    "metrics": asdict(self.metrics),
+                    "positions": {pid: asdict(p) for pid, p in self.positions.items()},
+                    "history": [asdict(p) for p in self.trade_history[-200:]]
+                }, f, indent=2)
+        except Exception as e:
+            print(f"[Sim] Could not save state: {e}")
+
+    # ── Position management ────────────────────────────────────────────────
+
+    def open_position(self, side: str, size_usd: float, leverage: float,
+                      symbol: str = "ETH-PERP",
+                      stop_loss_pct: float = 0.02,
+                      take_profit_pct: float = 0.04) -> SimPosition:
+        price = price_fetcher.get_eth_price()
+        fee = size_usd * leverage * 0.001  # 0.1% maker/taker
+        self.current_balance -= fee
+
+        sl = price * (1 - stop_loss_pct) if side == "long" else price * (1 + stop_loss_pct)
+        tp = price * (1 + take_profit_pct) if side == "long" else price * (1 - take_profit_pct)
+
+        pos = SimPosition(
+            id=str(uuid.uuid4())[:8],
             symbol=symbol,
             side=side,
-            entry_price=current_price,
-            size=position_size,
+            entry_price=price,
+            size_usd=size_usd,
             leverage=leverage,
             entry_time=datetime.now(timezone.utc).isoformat(),
-            current_price=current_price,
-            unrealized_pnl=0.0,
-            stop_loss=stop_loss,
-            take_profit=take_profit,
-            fees_paid=fees
+            current_price=price,
+            fees_paid=fee,
+            stop_loss=sl,
+            take_profit=tp,
         )
-        
-        self.positions[position_id] = position
-        self.current_balance -= fees
-        self.metrics.total_fees += fees
-        
-        print(f"📈 Opened {side.upper()} position: {symbol}")
-        print(f"   Entry: ${current_price:.2f} | Size: {position_size:.4f} {symbol}")
-        print(f"   Stop Loss: ${stop_loss:.2f} | Take Profit: ${take_profit:.2f}")
-        print(f"   Fees: ${fees:.2f} | Balance: ${self.current_balance:.2f}")
-        
-        self.save_simulation_state()
-        return position_id
-    
-    def update_positions(self):
-        """Update all open positions with current market data"""
-        positions_to_close = []
-        
-        for position_id, position in self.positions.items():
-            if position.status != "open":
-                continue
-            
-            # Get current price
-            current_price = self.get_real_time_price(position.symbol)
-            position.current_price = current_price
-            
-            # Calculate unrealized PnL
-            if position.side == "long":
-                price_diff = current_price - position.entry_price
-            else:  # short
-                price_diff = position.entry_price - current_price
-            
-            position.unrealized_pnl = (price_diff / position.entry_price) * position.size * position.entry_price * position.leverage
-            
-            # Apply funding costs (simplified)
-            funding_rate = self.calculate_funding_rate()
-            funding_cost = position.size * current_price * funding_rate
-            position.funding_paid += funding_cost
-            
-            # Check stop loss and take profit
-            should_close = False
-            close_reason = ""
-            
-            if position.side == "long":
-                if current_price <= position.stop_loss:
-                    should_close = True
-                    close_reason = "Stop Loss"
-                elif current_price >= position.take_profit:
-                    should_close = True
-                    close_reason = "Take Profit"
-            else:  # short
-                if current_price >= position.stop_loss:
-                    should_close = True
-                    close_reason = "Stop Loss"
-                elif current_price <= position.take_profit:
-                    should_close = True
-                    close_reason = "Take Profit"
-            
-            if should_close:
-                positions_to_close.append((position_id, close_reason))
-        
-        # Close positions that hit stop loss or take profit
-        for position_id, reason in positions_to_close:
-            self.close_position(position_id, reason)
-    
-    def close_position(self, position_id: str, reason: str = "Manual") -> bool:
-        """Close a simulated position"""
-        if position_id not in self.positions:
-            return False
-        
-        position = self.positions[position_id]
-        if position.status != "open":
-            return False
-        
-        # Get current price for exit
-        current_price = self.get_real_time_price(position.symbol)
-        exit_fees = self.calculate_fees(position.size * current_price)
-        
-        # Calculate final PnL
-        if position.side == "long":
-            price_diff = current_price - position.entry_price
-        else:  # short
-            price_diff = position.entry_price - current_price
-        
-        realized_pnl = (price_diff / position.entry_price) * position.size * position.entry_price * position.leverage
-        realized_pnl -= (position.fees_paid + exit_fees + position.funding_paid)
-        
-        # Update position
-        position.status = "closed"
-        position.exit_price = current_price
-        position.exit_time = datetime.now(timezone.utc).isoformat()
-        position.realized_pnl = realized_pnl
-        position.fees_paid += exit_fees
-        
-        # Update balance and metrics
-        self.current_balance += realized_pnl
-        self.metrics.current_balance = self.current_balance
-        self.metrics.total_pnl += realized_pnl
-        self.metrics.total_fees += exit_fees
-        self.metrics.total_funding += position.funding_paid
-        self.metrics.total_trades += 1
-        
-        if realized_pnl > 0:
-            self.metrics.winning_trades += 1
-            if realized_pnl > self.metrics.largest_win:
-                self.metrics.largest_win = realized_pnl
-        else:
-            self.metrics.losing_trades += 1
-            if realized_pnl < self.metrics.largest_loss:
-                self.metrics.largest_loss = realized_pnl
-        
-        # Move to trade history
-        self.trade_history.append(position)
-        del self.positions[position_id]
-        
-        # Update win rate
-        if self.metrics.total_trades > 0:
-            self.metrics.win_rate = self.metrics.winning_trades / self.metrics.total_trades
-        
-        print(f"🏁 Closed {position.side.upper()} position: {position.symbol}")
-        print(f"   Entry: ${position.entry_price:.2f} → Exit: ${current_price:.2f}")
-        print(f"   PnL: ${realized_pnl:.2f} | Reason: {reason}")
-        print(f"   Balance: ${self.current_balance:.2f}")
-        
-        self.save_simulation_state()
-        return True
-    
-    def get_portfolio_summary(self) -> Dict[str, Any]:
-        """Get comprehensive portfolio summary"""
-        # Update positions first
-        self.update_positions()
-        
-        total_unrealized = sum(pos.unrealized_pnl for pos in self.positions.values())
-        
-        return {
-            "balance": self.current_balance,
-            "total_pnl": self.metrics.total_pnl,
-            "unrealized_pnl": total_unrealized,
-            "total_value": self.current_balance + total_unrealized,
-            "open_positions": len(self.positions),
-            "total_trades": self.metrics.total_trades,
-            "win_rate": self.metrics.win_rate * 100,
-            "largest_win": self.metrics.largest_win,
-            "largest_loss": self.metrics.largest_loss,
-            "total_fees": self.metrics.total_fees,
-            "roi": ((self.current_balance - self.starting_balance) / self.starting_balance) * 100
-        }
-    
-    def save_simulation_state(self):
-        """Save simulation state to file"""
-        state = {
-            "starting_balance": self.starting_balance,
-            "current_balance": self.current_balance,
-            "positions": {pid: asdict(pos) for pid, pos in self.positions.items()},
-            "trade_history": [asdict(trade) for trade in self.trade_history],
-            "metrics": asdict(self.metrics)
-        }
-        
-        try:
-            with open(self.simulation_file, 'w') as f:
-                json.dump(state, f, indent=2)
-        except Exception as e:
-            print(f"Error saving simulation state: {e}")
-    
-    def load_simulation_state(self):
-        """Load simulation state from file"""
-        try:
-            with open(self.simulation_file, 'r') as f:
-                state = json.load(f)
-            
-            self.starting_balance = state.get("starting_balance", 10000.0)
-            self.current_balance = state.get("current_balance", 10000.0)
-            
-            # Load positions
-            self.positions = {}
-            for pid, pos_data in state.get("positions", {}).items():
-                self.positions[pid] = SimulatedPosition(**pos_data)
-            
-            # Load trade history
-            self.trade_history = []
-            for trade_data in state.get("trade_history", []):
-                self.trade_history.append(SimulatedPosition(**trade_data))
-            
-            # Load metrics
-            if "metrics" in state:
-                self.metrics = SimulationMetrics(**state["metrics"])
-            
-            print(f"📊 Loaded simulation state: {len(self.positions)} open positions, {len(self.trade_history)} completed trades")
-            
-        except FileNotFoundError:
-            print("📊 Starting fresh simulation")
-        except Exception as e:
-            print(f"Error loading simulation state: {e}")
+        self.positions[pos.id] = pos
+        self._save_state()
+        return pos
 
-# Global simulator instance
+    def update_positions(self) -> List[SimPosition]:
+        """Refresh all open positions with current market price."""
+        price = price_fetcher.get_eth_price()
+        closed = []
+        for pid, pos in list(self.positions.items()):
+            pos.current_price = price
+            notional = pos.size_usd * pos.leverage
+            price_change_pct = (price - pos.entry_price) / pos.entry_price
+            pos.unrealized_pnl = notional * price_change_pct if pos.side == "long" else notional * -price_change_pct
+
+            # Check stop loss / take profit
+            hit_sl = (pos.side == "long" and price <= pos.stop_loss) or \
+                     (pos.side == "short" and price >= pos.stop_loss)
+            hit_tp = (pos.side == "long" and price >= pos.take_profit) or \
+                     (pos.side == "short" and price <= pos.take_profit)
+
+            if hit_sl or hit_tp:
+                closed.append(self.close_position(pid, reason="TP" if hit_tp else "SL"))
+        self._save_state()
+        return closed
+
+    def close_position(self, position_id: str, reason: str = "manual") -> Optional[SimPosition]:
+        pos = self.positions.pop(position_id, None)
+        if not pos:
+            return None
+        price = price_fetcher.get_eth_price()
+        pos.exit_price = price
+        pos.exit_time = datetime.now(timezone.utc).isoformat()
+        pos.status = f"closed:{reason}"
+
+        notional = pos.size_usd * pos.leverage
+        price_change_pct = (price - pos.entry_price) / pos.entry_price
+        pos.realized_pnl = notional * price_change_pct if pos.side == "long" else notional * -price_change_pct
+        close_fee = notional * 0.001
+        pos.fees_paid += close_fee
+        pos.realized_pnl -= close_fee
+        pos.unrealized_pnl = 0
+
+        self.current_balance += pos.realized_pnl
+        self._update_metrics(pos)
+        self.trade_history.append(pos)
+        self._save_state()
+        return pos
+
+    def _update_metrics(self, pos: SimPosition):
+        m = self.metrics
+        m.total_trades += 1
+        m.total_pnl += pos.realized_pnl
+        m.total_fees += pos.fees_paid
+        m.current_balance = self.current_balance
+        if pos.realized_pnl > 0:
+            m.winning_trades += 1
+            m.avg_win = (m.avg_win * (m.winning_trades - 1) + pos.realized_pnl) / m.winning_trades
+            m.largest_win = max(m.largest_win, pos.realized_pnl)
+        else:
+            m.losing_trades += 1
+            ct = m.losing_trades
+            m.avg_loss = (m.avg_loss * (ct - 1) + pos.realized_pnl) / ct
+            m.largest_loss = min(m.largest_loss, pos.realized_pnl)
+        if m.total_trades > 0:
+            m.win_rate = (m.winning_trades / m.total_trades) * 100
+        peak = m.starting_balance
+        trough = self.current_balance
+        dd = (peak - trough) / peak * 100
+        m.max_drawdown = max(m.max_drawdown, dd)
+
+    def get_portfolio_summary(self) -> Dict[str, Any]:
+        price = price_fetcher.get_eth_price()
+        open_pnl = sum(p.unrealized_pnl for p in self.positions.values())
+        return {
+            "balance": round(self.current_balance, 2),
+            "open_pnl": round(open_pnl, 2),
+            "total_value": round(self.current_balance + open_pnl, 2),
+            "total_pnl": round(self.metrics.total_pnl, 2),
+            "total_trades": self.metrics.total_trades,
+            "win_rate": round(self.metrics.win_rate, 1),
+            "open_positions": len(self.positions),
+            "eth_price": round(price, 2),
+            "positions": [
+                {
+                    "id": p.id, "side": p.side, "entry": round(p.entry_price, 2),
+                    "current": round(p.current_price, 2), "pnl": round(p.unrealized_pnl, 2),
+                    "size_usd": p.size_usd, "leverage": p.leverage,
+                    "sl": round(p.stop_loss, 2), "tp": round(p.take_profit, 2)
+                }
+                for p in self.positions.values()
+            ],
+            "recent_trades": [
+                {
+                    "id": p.id, "side": p.side, "entry": round(p.entry_price, 2),
+                    "exit": round(p.exit_price, 2) if p.exit_price else None,
+                    "pnl": round(p.realized_pnl, 2), "status": p.status,
+                    "time": p.exit_time
+                }
+                for p in self.trade_history[-10:]
+            ]
+        }
+
+# Singleton
 simulator = TradingSimulator()
